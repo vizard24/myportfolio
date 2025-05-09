@@ -8,7 +8,7 @@ const navItems = [
   { name: 'Projects', href: '#projects' },
   { name: 'Experience', href: '#experience' },
   { name: 'Skills', href: '#skills' },
-  { name: 'Resume Pitch', href: '#resume-pitch' },
+  { name: 'Resume', href: '#resume' }, // Updated name and href
 ];
 
 export default function Header() {

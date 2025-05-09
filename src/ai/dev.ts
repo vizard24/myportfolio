@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/resume-pitch-generator.ts';
+import '@/ai/flows/tailored-resume-generator.ts';

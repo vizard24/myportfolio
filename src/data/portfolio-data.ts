@@ -36,13 +36,13 @@ export type SkillCategory = {
 }
 
 export const personalInfo = {
-  name: "Alex Johnson",
+  name: "Yaovi Gadedjro",
   title: "Innovative Full-Stack Developer",
   introduction: "A passionate and results-driven Full-Stack Developer with a knack for creating seamless and engaging user experiences. Eager to leverage modern technologies to build impactful solutions.",
   contact: {
-    email: "alex.johnson@example.com",
-    linkedin: "https://www.linkedin.com/in/alexjohnson", // Corrected URL
-    github: "https://www.github.com/alexjohnson", // Corrected URL
+    email: "fgadedjro@gmail.com",
+    linkedin: "https://www.linkedin.com/in/yaovigadedjro", // Corrected URL
+    github: "https://www.github.com/vizard24", // Corrected URL
   },
   profilePictureUrl: "https://picsum.photos/300/300",
   profilePictureHint: "professional portrait",
