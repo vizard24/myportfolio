@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram } from 'lucide-react';
+import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram, Award, Building, Star } from 'lucide-react';
 
 export type Project = {
   id: string;
@@ -24,8 +24,20 @@ export type Experience = {
   institution: string;
   dateRange: string;
   description: string | string[];
-  icon?: LucideIcon;
+  iconName?: string;
 };
+
+export const experienceIcons: { [key: string]: LucideIcon } = {
+  Briefcase,
+  GraduationCap,
+  Award,
+  Building,
+  CodeXml,
+  Star,
+};
+
+export const experienceIconNames = Object.keys(experienceIcons);
+
 
 export type Skill = {
   id: string;
@@ -48,11 +60,11 @@ export const personalInfo = {
     email: "fgadedjro@gmail.com",
     linkedin: "https://www.linkedin.com/in/yaovigadedjro",
     github: "https://www.github.com/vizard24",
-    twitter: "",
-    instagram: "",
-    substack: "",
-    medium: "",
-    discord: "",
+    twitter: "https://twitter.com/johndoe",
+    instagram: "https://instagram.com/johndoe",
+    substack: "https://johndoe.substack.com",
+    medium: "https://medium.com/@johndoe",
+    discord: "https://discord.com/users/johndoe",
   },
   profilePictureUrl: "https://picsum.photos/300/300",
   profilePictureHint: "professional portrait",
@@ -74,6 +86,7 @@ export const projectsData: Project[] = [
     ],
     githubUrl: 'https://github.com/alexjohnson/ecoleta',
     liveDemoUrl: 'https://ecoleta.example.com',
+    caseStudyUrl: '#',
   },
   {
     id: 'project-2',
@@ -87,6 +100,7 @@ export const projectsData: Project[] = [
       { name: 'JavaScript', icon: CodeXml },
     ],
     githubUrl: 'https://github.com/alexjohnson/devfinances',
+    videoDemoUrl: '#',
   },
   {
     id: 'project-3',
@@ -101,6 +115,8 @@ export const projectsData: Project[] = [
       { name: 'React', icon: CodeXml },
     ],
     liveDemoUrl: 'https://aisummarizer.example.com',
+    apiDocsUrl: '#',
+    designFilesUrl: '#',
   },
 ];
 
@@ -116,7 +132,7 @@ export const experienceData: Experience[] = [
       'Architected and implemented microservices leading to a 30% improvement in scalability.',
       'Mentored junior engineers and conducted code reviews.',
     ],
-    icon: Briefcase,
+    iconName: 'Briefcase',
   },
   {
     id: 'exp-2',
@@ -129,7 +145,7 @@ export const experienceData: Experience[] = [
       'Collaborated with designers to create responsive and user-friendly interfaces.',
       'Integrated third-party APIs for payment processing and social media.',
     ],
-    icon: Briefcase,
+    iconName: 'Briefcase',
   },
   {
     id: 'edu-1',
@@ -138,7 +154,7 @@ export const experienceData: Experience[] = [
     institution: 'State University',
     dateRange: 'Aug 2014 - May 2018',
     description: 'Graduated with honors. Focus on software development and artificial intelligence. Capstone project: "Predictive Analytics for Retail".',
-    icon: GraduationCap,
+    iconName: 'GraduationCap',
   },
 ];
 

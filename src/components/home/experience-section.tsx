@@ -1,10 +1,10 @@
 
 "use client";
 
-import { experienceData as initialExperienceData, type Experience } from '@/data/portfolio-data';
+import { experienceData as initialExperienceData, experienceIcons, experienceIconNames, type Experience } from '@/data/portfolio-data';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X } from 'lucide-react';
+import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X, Smile } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -22,6 +22,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { LucideIcon } from 'lucide-react';
+
 
 function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experience; onSave: (updatedItem: Experience) => void; onDelete: (itemId: string) => void; }) {
   const { isAdminMode } = useAdminMode();
@@ -29,7 +32,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState(initialItem);
   
-  const Icon = initialItem.icon || (initialItem.type === 'work' ? Briefcase : GraduationCap);
+  const Icon = experienceIcons[editedItem.iconName || ''] || (editedItem.type === 'work' ? Briefcase : GraduationCap);
 
   const handleSave = () => {
     onSave(editedItem);
@@ -48,11 +51,14 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
      if (name === 'description') {
-      // Convert textarea string back to string array for list items
       setEditedItem(prev => ({...prev, [name]: value.split('\n')}));
     } else {
       setEditedItem(prev => ({...prev, [name]: value}));
     }
+  };
+  
+  const handleIconChange = (iconName: string) => {
+    setEditedItem(prev => ({ ...prev, iconName }));
   };
 
   const handleDeleteClick = () => {
@@ -106,7 +112,31 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
         <CardHeader>
            {isEditing ? (
              <div className="space-y-2">
-                <Input name="title" value={editedItem.title} onChange={handleInputChange} placeholder="Title (e.g., Senior Software Engineer)" className="text-lg font-semibold h-auto"/>
+                <div className='flex items-center gap-2'>
+                  <Select value={editedItem.iconName} onValueChange={handleIconChange}>
+                    <SelectTrigger className="w-20 h-10">
+                      <SelectValue placeholder="Icon" >
+                        {experienceIcons[editedItem.iconName || ''] ? 
+                          React.createElement(experienceIcons[editedItem.iconName || ''], { className: 'h-5 w-5' }) : 
+                          <Smile className="h-5 w-5" />}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {experienceIconNames.map(name => {
+                        const IconComponent = experienceIcons[name];
+                        return (
+                          <SelectItem key={name} value={name}>
+                            <div className="flex items-center gap-2">
+                              <IconComponent className="h-5 w-5" />
+                              <span>{name}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <Input name="title" value={editedItem.title} onChange={handleInputChange} placeholder="Title (e.g., Senior Software Engineer)" className="text-lg font-semibold h-auto"/>
+                </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
                   <Input name="institution" value={editedItem.institution} onChange={handleInputChange} placeholder="Company / University" className="flex-1"/>
                   <span className="hidden sm:inline">&bull;</span>
@@ -158,7 +188,7 @@ export default function ExperienceSection() {
             institution: 'Company Name',
             dateRange: 'Start Date - End Date',
             description: ['Responsibility or achievement.'],
-            icon: Briefcase
+            iconName: 'Briefcase'
         };
         setExperience(prev => [newExperience, ...prev]);
         toast({
