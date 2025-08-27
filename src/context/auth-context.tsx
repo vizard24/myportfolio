@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (loggedInUser.email === ADMIN_EMAIL) {
         toast({
-          title: "Admin Login Successful",
+          title: "Login Successful",
           description: "You have successfully logged in as an admin.",
         });
         setUser(loggedInUser);
