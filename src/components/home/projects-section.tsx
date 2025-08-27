@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { type Project } from '@/data/portfolio-data';
+import { type Project, techIcons } from '@/data/portfolio-data';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -222,7 +222,8 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
 
         <div className="flex flex-wrap gap-2 my-4">
           {currentProject.techStack.map((tech) => {
-            const Icon = tech.icon;
+            const iconKey = Object.keys(techIcons).find(key => techIcons[key as keyof typeof techIcons].displayName === (tech.icon as any)?.displayName);
+            const Icon = iconKey ? techIcons[iconKey as keyof typeof techIcons] : null;
             return (
                 <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
                   {Icon && <Icon className="h-3 w-3" />}
@@ -337,5 +338,3 @@ export default function ProjectsSection() {
     </SectionWrapper>
   );
 }
-
-    

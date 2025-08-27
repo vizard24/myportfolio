@@ -34,7 +34,8 @@ import { Pencil, PlusCircle, Save, X, Trash2, Smile } from 'lucide-react';
 import { usePortfolioData } from '@/context/portfolio-data-context';
 
 function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isEditing: boolean; onUpdate: (updatedSkill: Skill) => void; onDelete: (skillId: string) => void; }) {
-  const Icon = skill.icon;
+  const iconName = Object.keys(techIcons).find(key => techIcons[key as keyof typeof techIcons].displayName === (skill.icon as any)?.displayName);
+  const Icon = iconName ? techIcons[iconName as keyof typeof techIcons] : null;
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onUpdate({ ...skill, name: e.target.value });
