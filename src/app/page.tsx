@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState } from 'react';
 import Header from '@/components/layout/header';
 import IntroductionSection from '@/components/home/introduction-section';
 import ProjectsSection from '@/components/home/projects-section';
@@ -10,21 +9,24 @@ import SkillsSection from '@/components/home/skills-section';
 import ResumeSection from '@/components/home/resume-section';
 import Footer from '@/components/layout/footer';
 import { AdminModeProvider } from '@/context/admin-mode-context';
+import { AuthProvider } from '@/context/auth-context';
 
 export default function HomePage() {
   return (
-    <AdminModeProvider>
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-grow">
-          <IntroductionSection />
-          <ProjectsSection />
-          <ExperienceSection />
-          <SkillsSection />
-          <ResumeSection />
-        </main>
-        <Footer />
-      </div>
-    </AdminModeProvider>
+    <AuthProvider>
+      <AdminModeProvider>
+        <div className="flex flex-col min-h-screen bg-background">
+          <Header />
+          <main className="flex-grow">
+            <IntroductionSection />
+            <ProjectsSection />
+            <ExperienceSection />
+            <SkillsSection />
+            <ResumeSection />
+          </main>
+          <Footer />
+        </div>
+      </AdminModeProvider>
+    </AuthProvider>
   );
 }

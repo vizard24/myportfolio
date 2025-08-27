@@ -1,22 +1,30 @@
 
 "use client";
 
-import React, { createContext, useState, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
+import { useAuth } from './auth-context';
 
 interface AdminModeContextType {
   isAdminMode: boolean;
-  toggleAdminMode: () => void;
+  toggleAdminMode: () => void; // This will now either log in or log out
 }
 
 const AdminModeContext = createContext<AdminModeContextType | undefined>(undefined);
 
 export function AdminModeProvider({ children }: { children: React.ReactNode }) {
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const { user, login, logout } = useAuth();
+
+  // Admin mode is on if the user is logged in.
+  const isAdminMode = !!user; 
 
   const toggleAdminMode = () => {
-    setIsAdminMode(prev => !prev);
+    if (isAdminMode) {
+      logout();
+    } else {
+      login();
+    }
   };
-
+  
   const value = useMemo(() => ({ isAdminMode, toggleAdminMode }), [isAdminMode]);
 
   return (
