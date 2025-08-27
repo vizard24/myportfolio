@@ -10,22 +10,25 @@ import ContactSection from '@/components/home/contact-section';
 import Footer from '@/components/layout/footer';
 import { AdminModeProvider } from '@/context/admin-mode-context';
 import { AuthProvider } from '@/context/auth-context';
+import { MessageProvider } from '@/context/message-context';
 
 export default function HomePage() {
   return (
     <AuthProvider>
       <AdminModeProvider>
-        <div className="flex flex-col min-h-screen bg-background">
-          <Header />
-          <main className="flex-grow">
-            <IntroductionSection />
-            <ProjectsSection />
-            <ExperienceSection />
-            <SkillsSection />
-            <ContactSection />
-          </main>
-          <Footer />
-        </div>
+        <MessageProvider>
+          <div className="flex flex-col min-h-screen bg-background">
+            <Header />
+            <main className="flex-grow">
+              <IntroductionSection />
+              <ProjectsSection />
+              <ExperienceSection />
+              <SkillsSection />
+              <ContactSection />
+            </main>
+            <Footer />
+          </div>
+        </MessageProvider>
       </AdminModeProvider>
     </AuthProvider>
   );

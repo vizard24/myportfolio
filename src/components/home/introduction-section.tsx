@@ -8,15 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Github, Linkedin, Mail, Download, Pencil, Save, Upload, Twitter, Instagram, Eye, EyeOff } from 'lucide-react';
+import { Github, Linkedin, Mail, Download, Pencil, Save, Upload, Twitter, Instagram, Eye, EyeOff, MessageSquare } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SocialIcons } from '@/components/layout/footer';
+import { useMessages } from '@/context/message-context';
+import { ViewMessagesDialog } from '@/components/admin/view-messages-dialog';
 
 export default function IntroductionSection() {
   const { isAdminMode } = useAdminMode();
+  const { hasUnreadMessages } = useMessages();
   const { toast } = useToast();
   const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
   const [isEditing, setIsEditing] = useState(false);
@@ -278,6 +281,14 @@ export default function IntroductionSection() {
                         Download CV
                     </Link>
                 </Button>
+                {isAdminMode && (
+                    <ViewMessagesDialog>
+                        <Button variant="outline" size="lg" className={hasUnreadMessages ? 'glow-orange' : ''}>
+                            <MessageSquare className="mr-2 h-5 w-5" />
+                            Messages
+                        </Button>
+                    </ViewMessagesDialog>
+                )}
                 {isEditing && (
                     <>
                         <input

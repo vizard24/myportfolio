@@ -7,24 +7,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, Mail, Phone, Linkedin } from 'lucide-react';
+import { Send, Mail, Linkedin, MessageSquare } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useToast } from '@/hooks/use-toast';
 import { personalInfo } from '@/data/portfolio-data';
+import { useMessages } from '@/context/message-context';
+import { ViewMessagesDialog } from '@/components/admin/view-messages-dialog';
 
 export default function ContactSection() {
     const { isAdminMode } = useAdminMode();
     const { toast } = useToast();
+    const { addMessage, hasUnreadMessages } = useMessages();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // In a real app, you would handle form submission here (e.g., send an email or save to a database)
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get('name') as string;
+        const email = formData.get('email') as string;
+        const message = formData.get('message') as string;
+
+        addMessage({ name, email, message });
+        
         toast({
             title: "Message Sent!",
-            description: "Thank you for reaching out. I'll get back to you soon.",
+            description: "Thank you for reaching out. Your message has been saved.",
         });
-        // @ts-ignore
-        e.target.reset();
+        e.currentTarget.reset();
     };
 
   return (
@@ -33,6 +41,15 @@ export default function ContactSection() {
         title="Get In Touch" 
         subtitle="I'm open to discussing new projects, creative ideas, or opportunities to be part of your vision."
         className="bg-secondary/50"
+        headerActions={
+            isAdminMode ? (
+                <ViewMessagesDialog>
+                     <Button variant="outline" size="sm" className={hasUnreadMessages ? 'glow-orange' : ''}>
+                        <MessageSquare className="mr-2 h-4 w-4" /> Your Messages
+                    </Button>
+                </ViewMessagesDialog>
+            ) : null
+        }
     >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
             <Card className="shadow-lg rounded-xl">

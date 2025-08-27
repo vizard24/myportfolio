@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -106,6 +107,25 @@ html {
     --sidebar-ring: 20 100% 74%;
   }
 }
+
+@layer utilities {
+  .glow-orange {
+    animation: glow-orange-animation 2s ease-in-out infinite;
+    box-shadow: 0 0 5px hsl(var(--accent)), 0 0 10px hsl(var(--accent)), 0 0 15px hsl(var(--accent));
+  }
+
+  @keyframes glow-orange-animation {
+    0%, 100% {
+      box-shadow: 0 0 5px hsl(var(--accent)), 0 0 10px hsl(var(--accent)), 0 0 15px hsl(var(--accent));
+      border-color: hsl(var(--accent));
+    }
+    50% {
+      box-shadow: 0 0 15px hsl(var(--accent) / 0.8), 0 0 25px hsl(var(--accent) / 0.8), 0 0 35px hsl(var(--accent) / 0.8);
+       border-color: hsl(var(--accent) / 0.8);
+    }
+  }
+}
+
 
 @layer base {
   * {
