@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Github, Linkedin, Mail, Download, Pencil, Save } from 'lucide-react';
+import { Github, Linkedin, Mail, Download, Pencil, Save, Upload } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
@@ -20,6 +20,9 @@ export default function IntroductionSection() {
   const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
+  const [resumeUrl, setResumeUrl] = useState('/resume.pdf');
+
 
   useEffect(() => {
     if (!isAdminMode) {
@@ -78,6 +81,31 @@ export default function IntroductionSection() {
   const handleImageEditClick = () => {
     fileInputRef.current?.click();
   };
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.type === 'application/pdf') {
+        const newResumeUrl = URL.createObjectURL(file);
+        setResumeUrl(newResumeUrl);
+        toast({
+          title: "CV Updated",
+          description: "The CV has been updated locally.",
+        });
+      } else {
+         toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF file.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleResumeEditClick = () => {
+    resumeInputRef.current?.click();
+  };
+
 
   return (
     <SectionWrapper id="home" className="bg-secondary/50">
@@ -188,12 +216,34 @@ export default function IntroductionSection() {
                 View Projects
               </Link>
             </Button>
-            <Button variant="outline" size="lg" asChild className="shadow-md">
-              <Link href="/resume.pdf" target="_blank" download>
-                <Download className="mr-2 h-5 w-5" />
-                Download CV
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="lg" asChild className="shadow-md">
+                    <Link href={resumeUrl} target="_blank" download="resume.pdf">
+                        <Download className="mr-2 h-5 w-5" />
+                        Download CV
+                    </Link>
+                </Button>
+                {isEditing && (
+                    <>
+                        <input
+                            type="file"
+                            ref={resumeInputRef}
+                            onChange={handleResumeChange}
+                            className="hidden"
+                            accept="application/pdf"
+                        />
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-11 w-11"
+                            onClick={handleResumeEditClick}
+                            aria-label="Upload new CV"
+                        >
+                            <Upload className="h-5 w-5" />
+                        </Button>
+                    </>
+                )}
+            </div>
           </div>
           <div className="mt-8 flex justify-center md:justify-start space-x-6">
             <Link href={personalInfo.contact.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
