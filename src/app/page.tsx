@@ -3,7 +3,7 @@ import IntroductionSection from '@/components/home/introduction-section';
 import ProjectsSection from '@/components/home/projects-section';
 import ExperienceSection from '@/components/home/experience-section';
 import SkillsSection from '@/components/home/skills-section';
-import ResumeSection from '@/components/home/resume-section'; // Updated import
+import ResumeSection from '@/components/home/resume-section';
 import Footer from '@/components/layout/footer';
 
 export default function HomePage() {
@@ -15,7 +15,7 @@ export default function HomePage() {
         <ProjectsSection />
         <ExperienceSection />
         <SkillsSection />
-        <ResumeSection /> {/* Using the updated ResumeSection */}
+        <ResumeSection />
       </main>
       <Footer />
     </div>
