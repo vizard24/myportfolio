@@ -6,7 +6,7 @@ import IntroductionSection from '@/components/home/introduction-section';
 import ProjectsSection from '@/components/home/projects-section';
 import ExperienceSection from '@/components/home/experience-section';
 import SkillsSection from '@/components/home/skills-section';
-import ResumeSection from '@/components/home/resume-section';
+import ContactSection from '@/components/home/contact-section';
 import Footer from '@/components/layout/footer';
 import { AdminModeProvider } from '@/context/admin-mode-context';
 import { AuthProvider } from '@/context/auth-context';
@@ -22,7 +22,7 @@ export default function HomePage() {
             <ProjectsSection />
             <ExperienceSection />
             <SkillsSection />
-            <ResumeSection />
+            <ContactSection />
           </main>
           <Footer />
         </div>
