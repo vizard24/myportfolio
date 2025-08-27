@@ -1,9 +1,13 @@
+
 import { personalInfo } from '@/data/portfolio-data';
-import { Github, Linkedin, Mail } from 'lucide-react';
+import { Github, Linkedin, Mail, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { useAdminMode } from '@/context/admin-mode-context';
+import { Button } from '@/components/ui/button';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { isAdminMode, toggleAdminMode } = useAdminMode();
 
   return (
     <footer className="border-t border-border/40 bg-background">
@@ -14,6 +18,10 @@ export default function Footer() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
+          <Button onClick={toggleAdminMode} variant={isAdminMode ? "secondary" : "ghost"} size="sm">
+            <Shield className="mr-2 h-4 w-4" />
+            {isAdminMode ? 'Exit Admin Mode' : 'Admin Mode'}
+          </Button>
           <Link href={personalInfo.contact.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <Github className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
           </Link>

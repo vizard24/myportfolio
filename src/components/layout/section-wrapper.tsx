@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "react";
 
@@ -9,6 +10,7 @@ interface SectionWrapperProps extends HTMLAttributes<HTMLElement> {
   className?: string;
   titleClassName?: string;
   subtitleClassName?: string;
+  headerActions?: React.ReactNode;
 }
 
 export default function SectionWrapper({
@@ -19,6 +21,7 @@ export default function SectionWrapper({
   className,
   titleClassName,
   subtitleClassName,
+  headerActions,
   ...props
 }: SectionWrapperProps) {
   return (
@@ -28,15 +31,22 @@ export default function SectionWrapper({
       {...props}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-xl">
-        {title && (
-          <h2 className={cn("text-3xl font-bold tracking-tight text-center text-primary sm:text-4xl mb-4", titleClassName)}>
-            {title}
-          </h2>
-        )}
-        {subtitle && (
-          <p className={cn("mt-2 text-lg text-center text-muted-foreground mb-12", subtitleClassName)}>
-            {subtitle}
-          </p>
+        {(title || subtitle || headerActions) && (
+            <div className="mb-12 text-center">
+            {title && (
+                <div className="flex justify-center items-center gap-4">
+                    <h2 className={cn("text-3xl font-bold tracking-tight text-primary sm:text-4xl", titleClassName)}>
+                        {title}
+                    </h2>
+                    {headerActions}
+                </div>
+            )}
+            {subtitle && (
+                <p className={cn("mt-2 text-lg text-muted-foreground", subtitleClassName)}>
+                {subtitle}
+                </p>
+            )}
+            </div>
         )}
         {children}
       </div>
