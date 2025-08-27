@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig } from 'lucide-react';
+import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool } from 'lucide-react';
 
 export type Project = {
   id: string;
@@ -10,6 +10,10 @@ export type Project = {
   techStack: { name: string; icon?: LucideIcon }[];
   githubUrl?: string;
   liveDemoUrl?: string;
+  caseStudyUrl?: string;
+  videoDemoUrl?: string;
+  apiDocsUrl?: string;
+  designFilesUrl?: string;
 };
 
 export type Experience = {
@@ -277,3 +281,5 @@ ${personalInfo.resumeSummary}
 - **B.S. in Computer Science from State University (2014 - 2018)**
 `
 };
+
+    

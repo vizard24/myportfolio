@@ -10,10 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Github, ExternalLink, Pencil, PlusCircle, Save, X, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Github, ExternalLink, Pencil, PlusCircle, Save, X, Eye, EyeOff, FileText, PlayCircle, BookMarked, PenTool } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+
+type LinkType = 'githubUrl' | 'liveDemoUrl' | 'caseStudyUrl' | 'videoDemoUrl' | 'apiDocsUrl' | 'designFilesUrl';
 
 function ProjectCard({ project: initialProject }: { project: Project }) {
   const { isAdminMode } = useAdminMode();
@@ -42,18 +44,16 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
     setEditedProject(prev => ({...prev, [name]: value}));
   };
 
-  const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>, linkType: 'githubUrl' | 'liveDemoUrl') => {
+  const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>, linkType: LinkType) => {
     setEditedProject(prev => ({...prev, [linkType]: e.target.value}));
   };
 
-  const toggleLinkVisibility = (linkType: 'githubUrl' | 'liveDemoUrl') => {
+  const toggleLinkVisibility = (linkType: LinkType) => {
     setEditedProject(prev => {
       const currentUrl = prev[linkType];
-      // If we are hiding it, we store the URL in a hidden field to restore it later.
-      // A more robust solution would use a different state structure, but this works for local state.
-      // @ts-ignore
       const tempStorageKey = `_${linkType}_hidden`;
-      if (currentUrl) {
+      if (currentUrl !== undefined) {
+        // @ts-ignore
         return {...prev, [linkType]: undefined, [tempStorageKey]: currentUrl};
       } else {
         // @ts-ignore
@@ -78,6 +78,15 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
         setNewTech("");
     }
   };
+  
+  const linkConfig: { key: LinkType, label: string, Icon: React.ElementType }[] = [
+    { key: 'githubUrl', label: 'GitHub', Icon: Github },
+    { key: 'liveDemoUrl', label: 'Live Demo', Icon: ExternalLink },
+    { key: 'caseStudyUrl', label: 'Case Study', Icon: FileText },
+    { key: 'videoDemoUrl', label: 'Video Demo', Icon: PlayCircle },
+    { key: 'apiDocsUrl', label: 'API Docs', Icon: BookMarked },
+    { key: 'designFilesUrl', label: 'Design Files', Icon: PenTool },
+  ];
 
 
   return (
@@ -142,39 +151,40 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
       <CardFooter className="mt-auto pt-0 pb-6 px-6 flex flex-col items-end gap-2">
         {isEditing ? (
             <div className="w-full space-y-2 text-xs">
-                {/* GitHub Link */}
-                <div className="flex items-center gap-2">
-                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => toggleLinkVisibility('githubUrl')}>
-                        {editedProject.githubUrl !== undefined ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </Button>
-                    <Github className="h-4 w-4" />
-                    <Input disabled={editedProject.githubUrl === undefined} name="githubUrl" value={editedProject.githubUrl || ''} onChange={(e) => handleLinkChange(e, 'githubUrl')} placeholder="GitHub URL" />
-                </div>
-                {/* Live Demo Link */}
-                <div className="flex items-center gap-2">
-                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => toggleLinkVisibility('liveDemoUrl')}>
-                        {editedProject.liveDemoUrl !== undefined ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </Button>
-                    <ExternalLink className="h-4 w-4" />
-                    <Input disabled={editedProject.liveDemoUrl === undefined} name="liveDemoUrl" value={editedProject.liveDemoUrl || ''} onChange={(e) => handleLinkChange(e, 'liveDemoUrl')} placeholder="Live Demo URL" />
-                </div>
+                {linkConfig.map(({key, Icon, label}) => (
+                  <div key={key} className="flex items-center gap-2">
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => toggleLinkVisibility(key)}>
+                          {editedProject[key] !== undefined ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </Button>
+                      <Icon className="h-4 w-4" />
+                      <Input 
+                        disabled={editedProject[key] === undefined} 
+                        name={key}
+                        value={editedProject[key] || ''} 
+                        onChange={(e) => handleLinkChange(e, key)} 
+                        placeholder={`${label} URL`} />
+                  </div>
+                ))}
             </div>
         ) : (
-            <div className="flex justify-end space-x-3 w-full">
-                {project.githubUrl && (
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                    <Github className="mr-2 h-4 w-4" /> GitHub
-                    </Link>
-                </Button>
-                )}
-                {project.liveDemoUrl && (
-                <Button size="sm" asChild className="bg-gradient-to-r from-[#FFA07A] to-[#FFDAB9] text-primary-foreground hover:opacity-90 transition-opacity">
-                    <Link href={project.liveDemoUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" /> Live Demo
-                    </Link>
-                </Button>
-                )}
+            <div className="flex justify-end flex-wrap gap-2 w-full">
+                {linkConfig.map(({key, Icon, label}) => {
+                    const url = project[key];
+                    if (!url) return null;
+                    const isPrimary = key === 'liveDemoUrl';
+                    return (
+                        <Button 
+                            key={key} 
+                            variant={isPrimary ? 'default' : 'outline'} 
+                            size="sm" asChild 
+                            className={isPrimary ? "bg-gradient-to-r from-[#FFA07A] to-[#FFDAB9] text-primary-foreground hover:opacity-90 transition-opacity" : ""}
+                        >
+                            <Link href={url} target="_blank" rel="noopener noreferrer">
+                            <Icon className="mr-2 h-4 w-4" /> {label}
+                            </Link>
+                        </Button>
+                    );
+                })}
             </div>
         )}
       </CardFooter>
@@ -207,3 +217,5 @@ export default function ProjectsSection() {
     </SectionWrapper>
   );
 }
+
+    
