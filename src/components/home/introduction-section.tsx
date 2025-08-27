@@ -3,12 +3,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { personalInfo as initialPersonalInfo } from '@/data/portfolio-data';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Github, Linkedin, Mail, Download, Pencil, Save, Upload, Twitter, Instagram, Eye, EyeOff, MessageSquare } from 'lucide-react';
+import { Download, Pencil, Save, Upload, Eye, EyeOff, MessageSquare } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
@@ -16,36 +15,41 @@ import { useToast } from '@/hooks/use-toast';
 import { SocialIcons } from '@/components/layout/footer';
 import { useMessages } from '@/context/message-context';
 import { ViewMessagesDialog } from '@/components/admin/view-messages-dialog';
+import { usePortfolioData } from '@/context/portfolio-data-context';
 
 export default function IntroductionSection() {
   const { isAdminMode } = useAdminMode();
   const { hasUnreadMessages } = useMessages();
   const { toast } = useToast();
-  const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
+  const { personalInfo, setPersonalInfo, resetPersonalInfo } = usePortfolioData();
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const [resumeUrl, setResumeUrl] = useState('/resume.pdf');
+  const [editedInfo, setEditedInfo] = useState(personalInfo);
 
 
   useEffect(() => {
     if (!isAdminMode) {
       setIsEditing(false);
-      // Optionally reset changes if not saved
-      // setPersonalInfo(initialPersonalInfo);
     }
   }, [isAdminMode]);
 
+  useEffect(() => {
+    setEditedInfo(personalInfo);
+  }, [personalInfo]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setPersonalInfo(prev => ({ ...prev, [name]: value }));
+    setEditedInfo(prev => ({ ...prev, [name]: value }));
   };
   
   const handleNestedInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const [parent, child] = name.split('.');
-    setPersonalInfo(prev => ({
+    setEditedInfo(prev => ({
       ...prev,
+      // @ts-ignore
       [parent]: {
         // @ts-ignore
         ...prev[parent],
@@ -55,7 +59,7 @@ export default function IntroductionSection() {
   };
 
   const toggleLinkVisibility = (linkKey: keyof typeof personalInfo.contact) => {
-    setPersonalInfo(prev => ({
+    setEditedInfo(prev => ({
         ...prev,
         contact: {
             ...prev.contact,
@@ -69,26 +73,30 @@ export default function IntroductionSection() {
 
   const handleSave = () => {
     setIsEditing(false);
-    // Here you would typically save the data to a backend/CMS
-    console.log("Saving data:", personalInfo);
+    setPersonalInfo(editedInfo);
     toast({
       title: "Content Saved",
-      description: "Your changes have been saved locally.",
+      description: "Your changes have been saved.",
     });
   };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedInfo(personalInfo);
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPersonalInfo(prev => ({
+        setEditedInfo(prev => ({
           ...prev,
           profilePictureUrl: reader.result as string,
         }));
         toast({
           title: "Image Updated",
-          description: "The profile picture has been updated locally.",
+          description: "The profile picture has been updated. Save to confirm.",
         });
       };
       reader.readAsDataURL(file);
@@ -107,7 +115,7 @@ export default function IntroductionSection() {
         setResumeUrl(newResumeUrl);
         toast({
           title: "CV Updated",
-          description: "The CV has been updated locally.",
+          description: "The CV has been updated locally for this session.",
         });
       } else {
          toast({
@@ -142,7 +150,7 @@ export default function IntroductionSection() {
           <div className="relative">
             <Card className="w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105">
               <Image
-                src={personalInfo.profilePictureUrl}
+                src={isEditing ? editedInfo.profilePictureUrl : personalInfo.profilePictureUrl}
                 alt={personalInfo.name}
                 width={320}
                 height={320}
@@ -186,7 +194,7 @@ export default function IntroductionSection() {
               <Button onClick={handleSave} >
                 <Save className="mr-2 h-4 w-4" /> Save
               </Button>
-               <Button onClick={() => {setIsEditing(false); setPersonalInfo(initialPersonalInfo);}} variant="ghost">
+               <Button onClick={handleCancel} variant="ghost">
                 Cancel
               </Button>
             </div>
@@ -196,7 +204,7 @@ export default function IntroductionSection() {
             {isEditing ? (
               <Input 
                 name="name" 
-                value={personalInfo.name} 
+                value={editedInfo.name} 
                 onChange={handleInputChange}
                 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-6xl mb-4 h-auto"
               />
@@ -211,7 +219,7 @@ export default function IntroductionSection() {
             {isEditing ? (
               <Input 
                 name="title" 
-                value={personalInfo.title} 
+                value={editedInfo.title} 
                 onChange={handleInputChange}
                 className="text-xl text-muted-foreground sm:text-2xl"
               />
@@ -226,7 +234,7 @@ export default function IntroductionSection() {
             {isEditing ? (
               <Textarea 
                 name="introduction" 
-                value={personalInfo.introduction} 
+                value={editedInfo.introduction} 
                 onChange={handleInputChange} 
                 className="text-base leading-relaxed text-foreground/80"
                 rows={4}
@@ -243,8 +251,8 @@ export default function IntroductionSection() {
                 <h3 className="text-sm font-semibold text-primary">Edit Social Links</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     {socialLinkConfig.map(({ key, label }) => {
-                       const linkKey = key as keyof typeof personalInfo.contact;
-                       const link = personalInfo.contact[linkKey];
+                       const linkKey = key as keyof typeof editedInfo.contact;
+                       const link = editedInfo.contact[linkKey];
                        return (
                            <div className="space-y-1" key={key}>
                                <label htmlFor={key} className="font-medium text-muted-foreground">{label}</label>

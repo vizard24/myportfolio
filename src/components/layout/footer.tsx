@@ -1,11 +1,12 @@
 
-import { personalInfo } from '@/data/portfolio-data';
-import { Github, Linkedin, Mail, Shield, LogIn, LogOut, Twitter, Instagram, Eye, EyeOff } from 'lucide-react';
+"use client";
+
+import { usePortfolioData } from '@/context/portfolio-data-context';
+import { Github, Linkedin, Mail, LogIn, LogOut, Instagram } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
-import type { LucideIcon } from 'lucide-react';
 
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -62,7 +63,7 @@ const DiscordIcon = (props: React.ComponentProps<'svg'>) => (
     </svg>
 );
 
-export const SocialIcons = ({ contact, iconClassName }: { contact: typeof personalInfo.contact; iconClassName?: string }) => {
+export const SocialIcons = ({ contact, iconClassName }: { contact: any; iconClassName?: string }) => {
     const socialPlatforms = [
       { key: 'github', link: contact.github, Icon: Github, label: 'GitHub' },
       { key: 'linkedin', link: contact.linkedin, Icon: Linkedin, label: 'LinkedIn' },
@@ -98,6 +99,7 @@ export const SocialIcons = ({ contact, iconClassName }: { contact: typeof person
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { personalInfo } = usePortfolioData();
   const { toggleAdminMode } = useAdminMode();
   const { user, loading } = useAuth();
 
