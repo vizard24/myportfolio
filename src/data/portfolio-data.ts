@@ -52,6 +52,23 @@ export type SkillCategory = {
   skills: Skill[];
 }
 
+export const techIcons: { [key: string]: LucideIcon } = {
+  CodeXml,
+  Cpu,
+  Database,
+  Palette,
+  GitMerge,
+  Settings,
+  Rocket,
+  Cloud,
+  TestTube2,
+  Users,
+  Brain,
+  MessageSquare,
+  BarChartBig,
+};
+
+
 export const personalInfo = {
   name: "Yaovi Gadedjro",
   title: "Innovative Full-Stack Developer",
