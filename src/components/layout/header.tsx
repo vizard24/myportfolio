@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
 const navItems = [
   { name: 'Home', href: '#home' },
@@ -16,7 +16,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center">
         <Link href="#home" className="mr-6 flex items-center space-x-2">
-          <span className="font-bold sm:inline-block text-primary">
+          <span className="font-bold sm:inline-block text-primary pl-4">
             Yaovi Portfolio
           </span>
         </Link>
