@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Download, Pencil, Save, Upload, Eye, EyeOff, MessageSquare } from 'lucide-react';
+import { Download, Pencil, Save, Upload, Eye, EyeOff, MessageSquare, X } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
@@ -21,7 +21,7 @@ export default function IntroductionSection() {
   const { isAdminMode } = useAdminMode();
   const { hasUnreadMessages } = useMessages();
   const { toast } = useToast();
-  const { personalInfo, setPersonalInfo, resetPersonalInfo } = usePortfolioData();
+  const { personalInfo, setPersonalInfo } = usePortfolioData();
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
@@ -150,7 +150,7 @@ export default function IntroductionSection() {
           <div className="relative">
             <Card className="w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105">
               <Image
-                src={isEditing ? editedInfo.profilePictureUrl : personalInfo.profilePictureUrl}
+                src={personalInfo.profilePictureUrl}
                 alt={personalInfo.name}
                 width={320}
                 height={320}
@@ -159,7 +159,7 @@ export default function IntroductionSection() {
                 data-ai-hint={personalInfo.profilePictureHint}
               />
             </Card>
-            {isAdminMode && (
+            {isEditing && (
               <>
                 <input
                   type="file"
@@ -195,7 +195,7 @@ export default function IntroductionSection() {
                 <Save className="mr-2 h-4 w-4" /> Save
               </Button>
                <Button onClick={handleCancel} variant="ghost">
-                Cancel
+                <X className="mr-2 h-4 w-4" /> Cancel
               </Button>
             </div>
           )}

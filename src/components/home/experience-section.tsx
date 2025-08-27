@@ -1,11 +1,12 @@
 
 "use client";
 
-import React, { useState } from 'react';
-import { experienceData as initialExperienceData, experienceIcons, experienceIconNames, type Experience } from '@/data/portfolio-data';
+import React, { useState, useEffect } from 'react';
+import type { Experience } from '@/data/portfolio-data';
+import { experienceIcons, experienceIconNames } from '@/data/portfolio-data';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X, Smile, Award, Building, CodeXml, Star } from 'lucide-react';
+import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X, Smile } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -23,8 +24,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePortfolioData } from '@/context/portfolio-data-context';
 
 
 const iconColorClasses: Record<string, string> = {
@@ -33,7 +34,6 @@ const iconColorClasses: Record<string, string> = {
   Award: 'bg-yellow-500',
   Building: 'bg-indigo-500',
   CodeXml: 'bg-purple-500',
-  Star: 'bg-pink-500',
   Default: 'bg-gradient-to-br from-[#FFA07A] to-[#FFDAB9]',
 };
 
@@ -43,6 +43,16 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState(initialItem);
+
+  useEffect(() => {
+    if (!isAdminMode) {
+      setIsEditing(false);
+    }
+  }, [isAdminMode]);
+
+  useEffect(() => {
+    setEditedItem(initialItem);
+  }, [initialItem]);
   
   const Icon = experienceIcons[editedItem.iconName || ''] || (editedItem.type === 'work' ? Briefcase : GraduationCap);
   const iconColor = iconColorClasses[editedItem.iconName || ''] || iconColorClasses.Default;
@@ -87,6 +97,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
     ? editedItem.description.join('\n') 
     : editedItem.description;
 
+  const currentItem = isEditing ? editedItem : initialItem;
 
   return (
     <div className="relative flex items-start pl-10 group">
@@ -158,8 +169,8 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
               </div>
             ) : (
               <>
-                <CardTitle className="text-lg font-semibold text-primary">{initialItem.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">{initialItem.institution} &bull; {initialItem.dateRange}</p>
+                <CardTitle className="text-lg font-semibold text-primary">{currentItem.title}</CardTitle>
+                <p className="text-sm text-muted-foreground">{currentItem.institution} &bull; {currentItem.dateRange}</p>
               </>
             )}
         </CardHeader>
@@ -173,11 +184,11 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
                 placeholder="Enter description points, one per line."
                 className="text-sm"
               />
-          ) : typeof initialItem.description === 'string' ? (
-            <p className="text-sm text-foreground/80 leading-relaxed">{initialItem.description}</p>
+          ) : typeof currentItem.description === 'string' ? (
+            <p className="text-sm text-foreground/80 leading-relaxed">{currentItem.description}</p>
           ) : (
             <ul className="list-disc list-inside space-y-1 text-sm text-foreground/80 leading-relaxed">
-              {initialItem.description.map((desc, index) => (
+              {currentItem.description.map((desc, index) => (
                 <li key={index}>{desc}</li>
               ))}
             </ul>
@@ -191,7 +202,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
 export default function ExperienceSection() {
     const { isAdminMode } = useAdminMode();
     const { toast } = useToast();
-    const [experience, setExperience] = useState<Experience[]>(initialExperienceData);
+    const { experience, setExperience } = usePortfolioData();
 
     const handleAddExperience = () => {
        const newExperience: Experience = {
@@ -203,7 +214,7 @@ export default function ExperienceSection() {
             description: ['Responsibility or achievement.'],
             iconName: 'Briefcase'
         };
-        setExperience(prev => [newExperience, ...prev]);
+        setExperience([newExperience, ...experience]);
         toast({
             title: "Experience Added",
             description: "A new experience card has been created. Click the edit icon to start adding details.",
@@ -211,11 +222,11 @@ export default function ExperienceSection() {
     }
 
     const handleUpdateExperience = (updatedItem: Experience) => {
-        setExperience(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+        setExperience(experience.map(item => item.id === updatedItem.id ? updatedItem : item));
     }
 
     const handleDeleteExperience = (itemId: string) => {
-        setExperience(prev => prev.filter(item => item.id !== itemId));
+        setExperience(experience.filter(item => item.id !== itemId));
     }
 
   return (

@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { projectsData as initialProjectsData, type Project } from '@/data/portfolio-data';
+import { type Project } from '@/data/portfolio-data';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Github, ExternalLink, Pencil, PlusCircle, Save, X, Eye, EyeOff, FileText, PlayCircle, BookMarked, PenTool, Trash2 } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -24,7 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { usePortfolioData } from '@/context/portfolio-data-context';
 
 
 type LinkType = 'githubUrl' | 'liveDemoUrl' | 'caseStudyUrl' | 'videoDemoUrl' | 'apiDocsUrl' | 'designFilesUrl';
@@ -36,6 +37,16 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
   const [editedProject, setEditedProject] = useState(initialProject);
   const [newTech, setNewTech] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isAdminMode) {
+      setIsEditing(false);
+    }
+  }, [isAdminMode]);
+
+  useEffect(() => {
+    setEditedProject(initialProject);
+  }, [initialProject]);
 
   const handleSave = () => {
     onSave(editedProject);
@@ -102,7 +113,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
         }));
         toast({
           title: "Image Updated",
-          description: "The project image has been updated locally.",
+          description: "The project image has been updated. Save to confirm.",
         });
       };
       reader.readAsDataURL(file);
@@ -131,6 +142,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
     { key: 'designFilesUrl', label: 'Design Files', Icon: PenTool },
   ];
 
+  const currentProject = isEditing ? editedProject : initialProject;
 
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative">
@@ -165,12 +177,12 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
       )}
       <div className="relative w-full h-56">
         <Image
-          src={isEditing ? editedProject.imageUrl : initialProject.imageUrl}
-          alt={initialProject.title}
+          src={currentProject.imageUrl}
+          alt={currentProject.title}
           fill
-          objectFit="cover"
+          style={{objectFit: "cover"}}
           className="transition-transform duration-500 group-hover:scale-105"
-          data-ai-hint={initialProject.imageHint || "technology project"}
+          data-ai-hint={currentProject.imageHint || "technology project"}
         />
         {isEditing && (
           <>
@@ -196,7 +208,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
         {isEditing ? (
             <Input name="title" value={editedProject.title} onChange={handleInputChange} className="text-xl font-semibold"/>
         ) : (
-            <CardTitle className="text-xl font-semibold text-primary">{initialProject.title}</CardTitle>
+            <CardTitle className="text-xl font-semibold text-primary">{currentProject.title}</CardTitle>
         )}
       </CardHeader>
       <CardContent className="flex-grow">
@@ -204,12 +216,12 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
             <Textarea name="description" value={editedProject.description} onChange={handleInputChange} rows={4} className="text-sm" />
         ) : (
             <CardDescription className="text-sm text-foreground/80 mb-4 leading-relaxed">
-            {initialProject.description}
+            {currentProject.description}
             </CardDescription>
         )}
 
         <div className="flex flex-wrap gap-2 my-4">
-          {(isEditing ? editedProject.techStack : initialProject.techStack).map((tech) => (
+          {currentProject.techStack.map((tech) => (
             <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
               {tech.icon && <tech.icon className="h-3 w-3" />}
               {tech.name}
@@ -249,7 +261,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
         ) : (
             <div className="flex justify-end flex-wrap gap-2 w-full">
                 {linkConfig.map(({key, Icon, label}) => {
-                    const url = initialProject[key];
+                    const url = currentProject[key];
                     if (!url) return null;
                     const isPrimary = key === 'liveDemoUrl';
                     return (
@@ -274,7 +286,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
 
 export default function ProjectsSection() {
     const { isAdminMode } = useAdminMode();
-    const [projects, setProjects] = useState<Project[]>(initialProjectsData);
+    const { projects, setProjects } = usePortfolioData();
     const { toast } = useToast();
 
     const handleAddProject = () => {
@@ -286,7 +298,7 @@ export default function ProjectsSection() {
             imageHint: 'new project placeholder',
             techStack: [],
         };
-        setProjects(prev => [newProject, ...prev]);
+        setProjects([newProject, ...projects]);
         toast({
             title: "Project Added",
             description: "A new project card has been created. Click the edit icon to start adding details.",
@@ -294,11 +306,11 @@ export default function ProjectsSection() {
     }
 
     const handleUpdateProject = (updatedProject: Project) => {
-        setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
     }
 
     const handleDeleteProject = (projectId: string) => {
-        setProjects(prev => prev.filter(p => p.id !== projectId));
+        setProjects(projects.filter(p => p.id !== projectId));
     }
 
   return (

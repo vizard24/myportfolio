@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import { skillsData as initialSkillsData, techIcons, type SkillCategory, type Skill } from '@/data/portfolio-data';
+import React, { useState, useEffect } from 'react';
+import { techIcons, type SkillCategory, type Skill } from '@/data/portfolio-data';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Pencil, PlusCircle, Save, X, Trash2, Smile } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { usePortfolioData } from '@/context/portfolio-data-context';
 
 function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isEditing: boolean; onUpdate: (updatedSkill: Skill) => void; onDelete: (skillId: string) => void; }) {
   const Icon = skill.icon;
@@ -115,6 +115,16 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
   const [isEditing, setIsEditing] = useState(false);
   const [editedCategory, setEditedCategory] = useState(initialCategory);
 
+  useEffect(() => {
+    if (!isAdminMode) {
+      setIsEditing(false);
+    }
+  }, [isAdminMode]);
+
+  useEffect(() => {
+    setEditedCategory(initialCategory);
+  }, [initialCategory]);
+
   const handleSave = () => {
     onSave(editedCategory);
     setIsEditing(false);
@@ -162,6 +172,8 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
     setEditedCategory(prev => ({ ...prev, skills: [...prev.skills, newSkill]}));
   };
 
+  const currentCategory = isEditing ? editedCategory : initialCategory;
+
   return (
     <Card className="shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative group/card">
        {isAdminMode && !isEditing && (
@@ -200,11 +212,11 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
                 className="text-xl font-semibold text-center h-auto"
             />
         ) : (
-            <CardTitle className="text-xl font-semibold text-primary text-center">{initialCategory.name}</CardTitle>
+            <CardTitle className="text-xl font-semibold text-primary text-center">{currentCategory.name}</CardTitle>
         )}
       </CardHeader>
       <CardContent>
-        {editedCategory.skills.map((skill) => (
+        {currentCategory.skills.map((skill) => (
           <SkillItem key={skill.id} skill={skill} isEditing={isEditing} onUpdate={handleSkillUpdate} onDelete={handleSkillDelete} />
         ))}
          {isEditing && (
@@ -220,7 +232,7 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
 export default function SkillsSection() {
     const { isAdminMode } = useAdminMode();
     const { toast } = useToast();
-    const [skillCategories, setSkillCategories] = useState<SkillCategory[]>(initialSkillsData);
+    const { skills, setSkills } = usePortfolioData();
 
     const handleAddCategory = () => {
         const newCategory: SkillCategory = {
@@ -228,7 +240,7 @@ export default function SkillsSection() {
             name: 'New Category',
             skills: [],
         };
-        setSkillCategories(prev => [...prev, newCategory]);
+        setSkills([...skills, newCategory]);
         toast({
             title: "Category Added",
             description: "A new skill category has been created. Click the edit icon to start adding skills.",
@@ -236,11 +248,11 @@ export default function SkillsSection() {
     };
 
     const handleUpdateCategory = (updatedCategory: SkillCategory) => {
-        setSkillCategories(prev => prev.map(cat => cat.id === updatedCategory.id ? updatedCategory : cat));
+        setSkills(skills.map(cat => cat.id === updatedCategory.id ? updatedCategory : cat));
     };
 
     const handleDeleteCategory = (categoryId: string) => {
-        setSkillCategories(prev => prev.filter(cat => cat.id !== categoryId));
+        setSkills(skills.filter(cat => cat.id !== categoryId));
     };
 
 
@@ -258,7 +270,7 @@ export default function SkillsSection() {
         }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {skillCategories.map((category) => (
+        {skills.map((category) => (
           <SkillCategoryCard 
             key={category.id} 
             category={category}
