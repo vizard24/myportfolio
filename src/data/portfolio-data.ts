@@ -57,14 +57,14 @@ export const personalInfo = {
   title: "Innovative Full-Stack Developer",
   introduction: "A passionate and results-driven Full-Stack Developer with a knack for creating seamless and engaging user experiences. Eager to leverage modern technologies to build impactful solutions.",
   contact: {
-    email: "fgadedjro@gmail.com",
-    linkedin: "https://www.linkedin.com/in/yaovigadedjro",
-    github: "https://www.github.com/vizard24",
-    twitter: "https://twitter.com/johndoe",
-    instagram: "https://instagram.com/johndoe",
-    substack: "https://johndoe.substack.com",
-    medium: "https://medium.com/@johndoe",
-    discord: "https://discord.com/users/johndoe",
+    email: { url: "fgadedjro@gmail.com", visible: true },
+    linkedin: { url: "https://www.linkedin.com/in/yaovigadedjro", visible: true },
+    github: { url: "https://www.github.com/vizard24", visible: true },
+    twitter: { url: "https://twitter.com/johndoe", visible: true },
+    instagram: { url: "https://instagram.com/johndoe", visible: true },
+    substack: { url: "https://johndoe.substack.com", visible: true },
+    medium: { url: "https://medium.com/@johndoe", visible: true },
+    discord: { url: "https://discord.com/users/johndoe", visible: true },
   },
   profilePictureUrl: "https://picsum.photos/300/300",
   profilePictureHint: "professional portrait",
@@ -224,7 +224,7 @@ export const staticResumesData: Record<string, string> = {
   "Frontend Developer": `
 # ${personalInfo.name}
 **Frontend Developer**
-Contact: ${personalInfo.contact.email} | LinkedIn: ${personalInfo.contact.linkedin} | GitHub: ${personalInfo.contact.github}
+Contact: ${personalInfo.contact.email.url} | LinkedIn: ${personalInfo.contact.linkedin.url} | GitHub: ${personalInfo.contact.github.url}
 
 ## Summary
 A passionate and results-driven Frontend Developer with a knack for creating seamless and engaging user experiences. Specializing in React, Next.js, and TypeScript.
@@ -250,7 +250,7 @@ A passionate and results-driven Frontend Developer with a knack for creating sea
   "Backend Developer": `
 # ${personalInfo.name}
 **Backend Developer**
-Contact: ${personalInfo.contact.email} | LinkedIn: ${personalInfo.contact.linkedin} | GitHub: ${personalInfo.contact.github}
+Contact: ${personalInfo.contact.email.url} | LinkedIn: ${personalInfo.contact.linkedin.url} | GitHub: ${personalInfo.contact.github.url}
 
 ## Summary
 Versatile Backend Developer with experience in designing, developing, and deploying scalable web applications. Proficient in Node.js, Python, and SQL/NoSQL databases.
@@ -277,7 +277,7 @@ Versatile Backend Developer with experience in designing, developing, and deploy
   "Full-Stack Developer": `
 # ${personalInfo.name}
 **Full-Stack Developer**
-Contact: ${personalInfo.contact.email} | LinkedIn: ${personalInfo.contact.linkedin} | GitHub: ${personalInfo.contact.github}
+Contact: ${personalInfo.contact.email.url} | LinkedIn: ${personalInfo.contact.linkedin.url} | GitHub: ${personalInfo.contact.github.url}
 
 ## Summary
 ${personalInfo.resumeSummary}

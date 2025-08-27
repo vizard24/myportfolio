@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Github, Linkedin, Mail, Download, Pencil, Save, Upload, Twitter, Instagram } from 'lucide-react';
+import { Github, Linkedin, Mail, Download, Pencil, Save, Upload, Twitter, Instagram, Eye, EyeOff } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
@@ -46,8 +46,21 @@ export default function IntroductionSection() {
       [parent]: {
         // @ts-ignore
         ...prev[parent],
-        [child]: value,
+        [child]: { ...prev[parent][child], url: value },
       },
+    }));
+  };
+
+  const toggleLinkVisibility = (linkKey: keyof typeof personalInfo.contact) => {
+    setPersonalInfo(prev => ({
+        ...prev,
+        contact: {
+            ...prev.contact,
+            [linkKey]: {
+                ...prev.contact[linkKey],
+                visible: !prev.contact[linkKey].visible,
+            },
+        },
     }));
   };
 
@@ -106,6 +119,17 @@ export default function IntroductionSection() {
   const handleResumeEditClick = () => {
     resumeInputRef.current?.click();
   };
+  
+  const socialLinkConfig = [
+    { key: 'email', label: 'Email' },
+    { key: 'github', label: 'GitHub' },
+    { key: 'linkedin', label: 'LinkedIn' },
+    { key: 'twitter', label: 'X / Twitter' },
+    { key: 'instagram', label: 'Instagram' },
+    { key: 'medium', label: 'Medium' },
+    { key: 'substack', label: 'Substack' },
+    { key: 'discord', label: 'Discord' },
+  ];
 
 
   return (
@@ -215,38 +239,28 @@ export default function IntroductionSection() {
             <Card className="mt-6 p-4 space-y-3 bg-primary/5">
                 <h3 className="text-sm font-semibold text-primary">Edit Social Links</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div className="space-y-1">
-                        <label htmlFor="email" className="font-medium text-muted-foreground">Email</label>
-                        <Input name="contact.email" id="email" value={personalInfo.contact.email} onChange={handleNestedInputChange} placeholder="your@email.com"/>
-                    </div>
-                     <div className="space-y-1">
-                        <label htmlFor="github" className="font-medium text-muted-foreground">GitHub</label>
-                        <Input name="contact.github" id="github" value={personalInfo.contact.github} onChange={handleNestedInputChange} placeholder="https://github.com/user"/>
-                    </div>
-                     <div className="space-y-1">
-                        <label htmlFor="linkedin" className="font-medium text-muted-foreground">LinkedIn</label>
-                        <Input name="contact.linkedin" id="linkedin" value={personalInfo.contact.linkedin} onChange={handleNestedInputChange} placeholder="https://linkedin.com/in/user"/>
-                    </div>
-                    <div className="space-y-1">
-                        <label htmlFor="twitter" className="font-medium text-muted-foreground">X / Twitter</label>
-                        <Input name="contact.twitter" id="twitter" value={personalInfo.contact.twitter} onChange={handleNestedInputChange} placeholder="https://x.com/user"/>
-                    </div>
-                     <div className="space-y-1">
-                        <label htmlFor="instagram" className="font-medium text-muted-foreground">Instagram</label>
-                        <Input name="contact.instagram" id="instagram" value={personalInfo.contact.instagram} onChange={handleNestedInputChange} placeholder="https://instagram.com/user"/>
-                    </div>
-                    <div className="space-y-1">
-                        <label htmlFor="medium" className="font-medium text-muted-foreground">Medium</label>
-                        <Input name="contact.medium" id="medium" value={personalInfo.contact.medium} onChange={handleNestedInputChange} placeholder="https://medium.com/@user"/>
-                    </div>
-                    <div className="space-y-1">
-                        <label htmlFor="substack" className="font-medium text-muted-foreground">Substack</label>
-                        <Input name="contact.substack" id="substack" value={personalInfo.contact.substack} onChange={handleNestedInputChange} placeholder="https://user.substack.com"/>
-                    </div>
-                    <div className="space-y-1">
-                        <label htmlFor="discord" className="font-medium text-muted-foreground">Discord</label>
-                        <Input name="contact.discord" id="discord" value={personalInfo.contact.discord} onChange={handleNestedInputChange} placeholder="Discord username or invite link"/>
-                    </div>
+                    {socialLinkConfig.map(({ key, label }) => {
+                       const linkKey = key as keyof typeof personalInfo.contact;
+                       const link = personalInfo.contact[linkKey];
+                       return (
+                           <div className="space-y-1" key={key}>
+                               <label htmlFor={key} className="font-medium text-muted-foreground">{label}</label>
+                               <div className="flex items-center gap-2">
+                                   <Button size="icon" variant="outline" className="h-9 w-9" onClick={() => toggleLinkVisibility(linkKey)}>
+                                     {link.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                   </Button>
+                                   <Input 
+                                       name={`contact.${key}`}
+                                       id={key}
+                                       value={link.url}
+                                       onChange={handleNestedInputChange}
+                                       placeholder={key === 'email' ? "your@email.com" : `https://${key}.com/user`}
+                                       disabled={!link.visible}
+                                   />
+                               </div>
+                           </div>
+                       );
+                    })}
                 </div>
             </Card>
           )}
@@ -294,4 +308,3 @@ export default function IntroductionSection() {
     </SectionWrapper>
   );
 }
-

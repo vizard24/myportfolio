@@ -1,6 +1,6 @@
 
 import { personalInfo } from '@/data/portfolio-data';
-import { Github, Linkedin, Mail, Shield, LogIn, LogOut, Twitter, Instagram } from 'lucide-react';
+import { Github, Linkedin, Mail, Shield, LogIn, LogOut, Twitter, Instagram, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { Button } from '@/components/ui/button';
@@ -64,25 +64,25 @@ const DiscordIcon = (props: React.ComponentProps<'svg'>) => (
 
 export const SocialIcons = ({ contact, iconClassName }: { contact: typeof personalInfo.contact; iconClassName?: string }) => {
     const socialPlatforms = [
-      { key: 'github', url: contact.github, Icon: Github, label: 'GitHub' },
-      { key: 'linkedin', url: contact.linkedin, Icon: Linkedin, label: 'LinkedIn' },
-      { key: 'email', url: `mailto:${contact.email}`, Icon: Mail, label: 'Email' },
-      { key: 'twitter', url: contact.twitter, Icon: XIcon, label: 'X / Twitter'},
-      { key: 'instagram', url: contact.instagram, Icon: Instagram, label: 'Instagram' },
-      { key: 'medium', url: contact.medium, Icon: MediumIcon, label: 'Medium' },
-      { key: 'substack', url: contact.substack, Icon: SubstackIcon, label: 'Substack' },
-      { key: 'discord', url: contact.discord, Icon: DiscordIcon, label: 'Discord' },
+      { key: 'github', link: contact.github, Icon: Github, label: 'GitHub' },
+      { key: 'linkedin', link: contact.linkedin, Icon: Linkedin, label: 'LinkedIn' },
+      { key: 'email', link: { url: `mailto:${contact.email.url}`, visible: contact.email.visible }, Icon: Mail, label: 'Email' },
+      { key: 'twitter', link: contact.twitter, Icon: XIcon, label: 'X / Twitter'},
+      { key: 'instagram', link: contact.instagram, Icon: Instagram, label: 'Instagram' },
+      { key: 'medium', link: contact.medium, Icon: MediumIcon, label: 'Medium' },
+      { key: 'substack', link: contact.substack, Icon: SubstackIcon, label: 'Substack' },
+      { key: 'discord', link: contact.discord, Icon: DiscordIcon, label: 'Discord' },
     ];
   
     return (
       <>
-        {socialPlatforms.map(({ key, url, Icon, label }) => {
-          if (!url) return null;
+        {socialPlatforms.map(({ key, link, Icon, label }) => {
+          if (!link.url || !link.visible) return null;
           const isEmail = key === 'email';
           return (
             <Link 
               key={key} 
-              href={url} 
+              href={link.url} 
               target={isEmail ? '_self' : '_blank'} 
               rel={isEmail ? '' : 'noopener noreferrer'} 
               aria-label={label}
