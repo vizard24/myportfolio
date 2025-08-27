@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Github, ExternalLink, Pencil, PlusCircle, Save, X, Eye, EyeOff, FileText, PlayCircle, BookMarked, PenTool } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 type LinkType = 'githubUrl' | 'liveDemoUrl' | 'caseStudyUrl' | 'videoDemoUrl' | 'apiDocsUrl' | 'designFilesUrl';
@@ -24,6 +24,7 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
   const [project, setProject] = useState(initialProject);
   const [editedProject, setEditedProject] = useState(initialProject);
   const [newTech, setNewTech] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = () => {
     setProject(editedProject);
@@ -78,6 +79,28 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
         setNewTech("");
     }
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedProject(prev => ({
+          ...prev,
+          imageUrl: reader.result as string,
+        }));
+        toast({
+          title: "Image Updated",
+          description: "The project image has been updated locally.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageEditClick = () => {
+    fileInputRef.current?.click();
+  };
   
   const linkConfig: { key: LinkType, label: string, Icon: React.ElementType }[] = [
     { key: 'githubUrl', label: 'GitHub', Icon: Github },
@@ -104,13 +127,32 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
       )}
       <div className="relative w-full h-56">
         <Image
-          src={project.imageUrl}
+          src={isEditing ? editedProject.imageUrl : project.imageUrl}
           alt={project.title}
           fill
           objectFit="cover"
           className="transition-transform duration-500 group-hover:scale-105"
           data-ai-hint={project.imageHint || "technology project"}
         />
+        {isEditing && (
+          <>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              className="hidden"
+              accept="image/*"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute bottom-2 right-2 h-8 w-8 bg-black/50 text-white hover:bg-black/70 hover:text-white"
+              onClick={handleImageEditClick}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </>
+        )}
       </div>
       <CardHeader>
         {isEditing ? (
@@ -217,5 +259,7 @@ export default function ProjectsSection() {
     </SectionWrapper>
   );
 }
+
+    
 
     
