@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram, Award, Building, Star } from 'lucide-react';
+import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram, Award, Building } from 'lucide-react';
 
 export type Project = {
   id: string;
@@ -33,7 +33,6 @@ export const experienceIcons: { [key: string]: LucideIcon } = {
   Award,
   Building,
   CodeXml,
-  Star,
 };
 
 export const experienceIconNames = Object.keys(experienceIcons);

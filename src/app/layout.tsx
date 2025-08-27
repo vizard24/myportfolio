@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Synapse Portfolio',
+  title: 'Yaovi Portfolio',
   description: 'A personal portfolio showcasing projects, experience, and skills, with an AI-powered resume pitch generator.',
 };
 
