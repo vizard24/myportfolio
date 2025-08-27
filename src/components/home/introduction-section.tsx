@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Github, Linkedin, Mail, Download, Pencil, Save } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function IntroductionSection() {
@@ -19,6 +19,7 @@ export default function IntroductionSection() {
   const { toast } = useToast();
   const [personalInfo, setPersonalInfo] = useState(initialPersonalInfo);
   const [isEditing, setIsEditing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isAdminMode) {
@@ -56,6 +57,28 @@ export default function IntroductionSection() {
     });
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPersonalInfo(prev => ({
+          ...prev,
+          profilePictureUrl: reader.result as string,
+        }));
+        toast({
+          title: "Image Updated",
+          description: "The profile picture has been updated locally.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageEditClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <SectionWrapper id="home" className="bg-secondary/50">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-12 items-center">
@@ -73,9 +96,24 @@ export default function IntroductionSection() {
               />
             </Card>
             {isAdminMode && (
-              <Button variant="outline" size="icon" className="absolute bottom-4 right-4 rounded-full h-10 w-10 shadow-lg">
-                <Pencil className="h-5 w-5" />
-              </Button>
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  className="hidden"
+                  accept="image/*"
+                />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="absolute bottom-4 right-4 rounded-full h-10 w-10 shadow-lg"
+                  onClick={handleImageEditClick}
+                  aria-label="Edit profile picture"
+                >
+                  <Pencil className="h-5 w-5" />
+                </Button>
+              </>
             )}
           </div>
         </div>
