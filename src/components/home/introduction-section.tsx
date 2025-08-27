@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Github, Linkedin, Mail, Download, Pencil, Save, Upload } from 'lucide-react';
+import { Github, Linkedin, Mail, Download, Pencil, Save, Upload, Twitter, Instagram } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { SocialIcons } from '@/components/layout/footer';
 
 export default function IntroductionSection() {
   const { isAdminMode } = useAdminMode();
@@ -209,6 +210,46 @@ export default function IntroductionSection() {
               </p>
             )}
           </div>
+          
+          {isEditing && (
+            <Card className="mt-6 p-4 space-y-3 bg-primary/5">
+                <h3 className="text-sm font-semibold text-primary">Edit Social Links</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-1">
+                        <label htmlFor="email" className="font-medium text-muted-foreground">Email</label>
+                        <Input name="contact.email" id="email" value={personalInfo.contact.email} onChange={handleNestedInputChange} placeholder="your@email.com"/>
+                    </div>
+                     <div className="space-y-1">
+                        <label htmlFor="github" className="font-medium text-muted-foreground">GitHub</label>
+                        <Input name="contact.github" id="github" value={personalInfo.contact.github} onChange={handleNestedInputChange} placeholder="https://github.com/user"/>
+                    </div>
+                     <div className="space-y-1">
+                        <label htmlFor="linkedin" className="font-medium text-muted-foreground">LinkedIn</label>
+                        <Input name="contact.linkedin" id="linkedin" value={personalInfo.contact.linkedin} onChange={handleNestedInputChange} placeholder="https://linkedin.com/in/user"/>
+                    </div>
+                    <div className="space-y-1">
+                        <label htmlFor="twitter" className="font-medium text-muted-foreground">X / Twitter</label>
+                        <Input name="contact.twitter" id="twitter" value={personalInfo.contact.twitter} onChange={handleNestedInputChange} placeholder="https://x.com/user"/>
+                    </div>
+                     <div className="space-y-1">
+                        <label htmlFor="instagram" className="font-medium text-muted-foreground">Instagram</label>
+                        <Input name="contact.instagram" id="instagram" value={personalInfo.contact.instagram} onChange={handleNestedInputChange} placeholder="https://instagram.com/user"/>
+                    </div>
+                    <div className="space-y-1">
+                        <label htmlFor="medium" className="font-medium text-muted-foreground">Medium</label>
+                        <Input name="contact.medium" id="medium" value={personalInfo.contact.medium} onChange={handleNestedInputChange} placeholder="https://medium.com/@user"/>
+                    </div>
+                    <div className="space-y-1">
+                        <label htmlFor="substack" className="font-medium text-muted-foreground">Substack</label>
+                        <Input name="contact.substack" id="substack" value={personalInfo.contact.substack} onChange={handleNestedInputChange} placeholder="https://user.substack.com"/>
+                    </div>
+                    <div className="space-y-1">
+                        <label htmlFor="discord" className="font-medium text-muted-foreground">Discord</label>
+                        <Input name="contact.discord" id="discord" value={personalInfo.contact.discord} onChange={handleNestedInputChange} placeholder="Discord username or invite link"/>
+                    </div>
+                </div>
+            </Card>
+          )}
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
             <Button asChild size="lg" className="bg-gradient-to-r from-[#FFA07A] to-[#FFDAB9] text-primary-foreground hover:opacity-90 transition-opacity shadow-md">
@@ -246,18 +287,11 @@ export default function IntroductionSection() {
             </div>
           </div>
           <div className="mt-8 flex justify-center md:justify-start space-x-6">
-            <Link href={personalInfo.contact.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
-              <Github className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" />
-            </Link>
-            <Link href={personalInfo.contact.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-              <Linkedin className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" />
-            </Link>
-            <Link href={`mailto:${personalInfo.contact.email}`} aria-label="Send email">
-              <Mail className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" />
-            </Link>
+            <SocialIcons contact={personalInfo.contact} iconClassName="h-7 w-7" />
           </div>
         </div>
       </div>
     </SectionWrapper>
   );
 }
+

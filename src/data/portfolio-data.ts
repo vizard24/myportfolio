@@ -1,5 +1,6 @@
+
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool } from 'lucide-react';
+import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram } from 'lucide-react';
 
 export type Project = {
   id: string;
@@ -17,7 +18,7 @@ export type Project = {
 };
 
 export type Experience = {
-  id: string;
+  id:string;
   type: 'work' | 'education';
   title: string;
   institution: string;
@@ -45,8 +46,13 @@ export const personalInfo = {
   introduction: "A passionate and results-driven Full-Stack Developer with a knack for creating seamless and engaging user experiences. Eager to leverage modern technologies to build impactful solutions.",
   contact: {
     email: "fgadedjro@gmail.com",
-    linkedin: "https://www.linkedin.com/in/yaovigadedjro", // Corrected URL
-    github: "https://www.github.com/vizard24", // Corrected URL
+    linkedin: "https://www.linkedin.com/in/yaovigadedjro",
+    github: "https://www.github.com/vizard24",
+    twitter: "",
+    instagram: "",
+    substack: "",
+    medium: "",
+    discord: "",
   },
   profilePictureUrl: "https://picsum.photos/300/300",
   profilePictureHint: "professional portrait",
@@ -281,5 +287,3 @@ ${personalInfo.resumeSummary}
 - **B.S. in Computer Science from State University (2014 - 2018)**
 `
 };
-
-    
