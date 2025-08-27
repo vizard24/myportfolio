@@ -221,17 +221,20 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
         )}
 
         <div className="flex flex-wrap gap-2 my-4">
-          {currentProject.techStack.map((tech) => (
-            <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
-              {tech.icon && <tech.icon className="h-3 w-3" />}
-              {tech.name}
-              {isEditing && (
-                 <button onClick={() => handleTechDelete(tech.name)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-4 w-4 flex items-center justify-center opacity-0 group-hover/badge:opacity-100 transition-opacity">
-                    <X className="h-3 w-3" />
-                 </button>
-              )}
-            </Badge>
-          ))}
+          {currentProject.techStack.map((tech) => {
+            const Icon = tech.icon;
+            return (
+                <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
+                  {Icon && <Icon className="h-3 w-3" />}
+                  {tech.name}
+                  {isEditing && (
+                     <button onClick={() => handleTechDelete(tech.name)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-4 w-4 flex items-center justify-center opacity-0 group-hover/badge:opacity-100 transition-opacity">
+                        <X className="h-3 w-3" />
+                     </button>
+                  )}
+                </Badge>
+            );
+          })}
         </div>
         {isEditing && (
             <div className="flex gap-2 mt-2">
