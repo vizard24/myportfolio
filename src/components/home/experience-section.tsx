@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { experienceData as initialExperienceData, experienceIcons, experienceIconNames, type Experience } from '@/data/portfolio-data';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X, Smile } from 'lucide-react';
+import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X, Smile, Award, Building, CodeXml, Star } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +24,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+
+const iconColorClasses: Record<string, string> = {
+  Briefcase: 'bg-blue-500',
+  GraduationCap: 'bg-green-500',
+  Award: 'bg-yellow-500',
+  Building: 'bg-indigo-500',
+  CodeXml: 'bg-purple-500',
+  Star: 'bg-pink-500',
+  Default: 'bg-gradient-to-br from-[#FFA07A] to-[#FFDAB9]',
+};
 
 
 function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experience; onSave: (updatedItem: Experience) => void; onDelete: (itemId: string) => void; }) {
@@ -33,6 +45,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
   const [editedItem, setEditedItem] = useState(initialItem);
   
   const Icon = experienceIcons[editedItem.iconName || ''] || (editedItem.type === 'work' ? Briefcase : GraduationCap);
+  const iconColor = iconColorClasses[editedItem.iconName || ''] || iconColorClasses.Default;
 
   const handleSave = () => {
     onSave(editedItem);
@@ -77,7 +90,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
 
   return (
     <div className="relative flex items-start pl-10 group">
-      <span className="absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#FFA07A] to-[#FFDAB9] ring-4 ring-background shadow-md">
+      <span className={cn("absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-background shadow-md", iconColor)}>
         <Icon className="h-5 w-5 text-primary-foreground" />
       </span>
       <Card className="ml-4 flex-1 overflow-hidden shadow-md rounded-lg transition-all duration-300 group-hover:shadow-xl transform group-hover:scale-[1.02] relative">
