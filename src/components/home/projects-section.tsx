@@ -10,24 +10,35 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Github, ExternalLink, Pencil, PlusCircle, Save, X, Eye, EyeOff, FileText, PlayCircle, BookMarked, PenTool } from 'lucide-react';
+import { Github, ExternalLink, Pencil, PlusCircle, Save, X, Eye, EyeOff, FileText, PlayCircle, BookMarked, PenTool, Trash2 } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 type LinkType = 'githubUrl' | 'liveDemoUrl' | 'caseStudyUrl' | 'videoDemoUrl' | 'apiDocsUrl' | 'designFilesUrl';
 
-function ProjectCard({ project: initialProject }: { project: Project }) {
+function ProjectCard({ project: initialProject, onSave, onDelete }: { project: Project; onSave: (updatedProject: Project) => void; onDelete: (projectId: string) => void; }) {
   const { isAdminMode } = useAdminMode();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [project, setProject] = useState(initialProject);
   const [editedProject, setEditedProject] = useState(initialProject);
   const [newTech, setNewTech] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = () => {
-    setProject(editedProject);
+    onSave(editedProject);
     setIsEditing(false);
     toast({
       title: "Project Saved",
@@ -36,7 +47,7 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
   };
 
   const handleCancel = () => {
-    setEditedProject(project);
+    setEditedProject(initialProject);
     setIsEditing(false);
   };
   
@@ -101,6 +112,15 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
   const handleImageEditClick = () => {
     fileInputRef.current?.click();
   };
+
+  const handleDeleteClick = () => {
+    onDelete(initialProject.id);
+    toast({
+        title: "Project Deleted",
+        description: `"${initialProject.title}" has been removed.`,
+        variant: "destructive"
+    });
+  }
   
   const linkConfig: { key: LinkType, label: string, Icon: React.ElementType }[] = [
     { key: 'githubUrl', label: 'GitHub', Icon: Github },
@@ -123,16 +143,34 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
          <div className="absolute top-2 right-2 z-10 flex gap-1">
             <Button variant="default" size="icon" className="h-8 w-8" onClick={handleSave}><Save className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel}><X className="h-4 w-4" /></Button>
+             <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the project
+                    "{initialProject.title}".
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteClick}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
          </div>
       )}
       <div className="relative w-full h-56">
         <Image
-          src={isEditing ? editedProject.imageUrl : project.imageUrl}
-          alt={project.title}
+          src={isEditing ? editedProject.imageUrl : initialProject.imageUrl}
+          alt={initialProject.title}
           fill
           objectFit="cover"
           className="transition-transform duration-500 group-hover:scale-105"
-          data-ai-hint={project.imageHint || "technology project"}
+          data-ai-hint={initialProject.imageHint || "technology project"}
         />
         {isEditing && (
           <>
@@ -158,7 +196,7 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
         {isEditing ? (
             <Input name="title" value={editedProject.title} onChange={handleInputChange} className="text-xl font-semibold"/>
         ) : (
-            <CardTitle className="text-xl font-semibold text-primary">{project.title}</CardTitle>
+            <CardTitle className="text-xl font-semibold text-primary">{initialProject.title}</CardTitle>
         )}
       </CardHeader>
       <CardContent className="flex-grow">
@@ -166,12 +204,12 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
             <Textarea name="description" value={editedProject.description} onChange={handleInputChange} rows={4} className="text-sm" />
         ) : (
             <CardDescription className="text-sm text-foreground/80 mb-4 leading-relaxed">
-            {project.description}
+            {initialProject.description}
             </CardDescription>
         )}
 
         <div className="flex flex-wrap gap-2 my-4">
-          {(isEditing ? editedProject.techStack : project.techStack).map((tech) => (
+          {(isEditing ? editedProject.techStack : initialProject.techStack).map((tech) => (
             <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
               {tech.icon && <tech.icon className="h-3 w-3" />}
               {tech.name}
@@ -211,7 +249,7 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
         ) : (
             <div className="flex justify-end flex-wrap gap-2 w-full">
                 {linkConfig.map(({key, Icon, label}) => {
-                    const url = project[key];
+                    const url = initialProject[key];
                     if (!url) return null;
                     const isPrimary = key === 'liveDemoUrl';
                     return (
@@ -236,7 +274,32 @@ function ProjectCard({ project: initialProject }: { project: Project }) {
 
 export default function ProjectsSection() {
     const { isAdminMode } = useAdminMode();
-    const [projects, setProjects] = useState(initialProjectsData);
+    const [projects, setProjects] = useState<Project[]>(initialProjectsData);
+    const { toast } = useToast();
+
+    const handleAddProject = () => {
+        const newProject: Project = {
+            id: `project-${Date.now()}`,
+            title: 'New Project',
+            description: 'A brief description of your new project.',
+            imageUrl: 'https://picsum.photos/600/400',
+            imageHint: 'new project placeholder',
+            techStack: [],
+        };
+        setProjects(prev => [newProject, ...prev]);
+        toast({
+            title: "Project Added",
+            description: "A new project card has been created. Click the edit icon to start adding details.",
+        });
+    }
+
+    const handleUpdateProject = (updatedProject: Project) => {
+        setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+    }
+
+    const handleDeleteProject = (projectId: string) => {
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+    }
 
   return (
     <SectionWrapper 
@@ -245,7 +308,7 @@ export default function ProjectsSection() {
       subtitle="A selection of projects I've worked on."
       headerActions={
         isAdminMode ? (
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleAddProject}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Project
           </Button>
         ) : null
@@ -253,13 +316,9 @@ export default function ProjectsSection() {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard key={project.id} project={project} onSave={handleUpdateProject} onDelete={handleDeleteProject} />
         ))}
       </div>
     </SectionWrapper>
   );
 }
-
-    
-
-    
