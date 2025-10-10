@@ -1,12 +1,12 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useNetworkingData, type NetworkingContact, type ContactStatus } from '@/context/networking-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Pencil, Save, Trash2, X, Linkedin, Building, Briefcase, GraduationCap, Award } from 'lucide-react';
+import { PlusCircle, Pencil, Save, Trash2, X, Linkedin, Building, Briefcase, GraduationCap, Award, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,6 +25,7 @@ import {
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
+import Papa from 'papaparse';
 
 
 const statusColors: Record<ContactStatus, string> = {
@@ -158,8 +159,9 @@ function ContactCard({ contact: initialContact, onSave, onDelete }: { contact: N
 
 
 export default function NetworkingSection() {
-    const { contacts, addContact, updateContact, deleteContact } = useNetworkingData();
+    const { contacts, addContact, updateContact, deleteContact, setContacts } = useNetworkingData();
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleAddContact = () => {
         const newContact: Omit<NetworkingContact, 'id'> = {
@@ -175,6 +177,59 @@ export default function NetworkingSection() {
         toast({ title: "New Contact Added", description: "Click the pencil icon to edit details." });
     };
 
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+            toast({
+                title: "No file selected",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+                const parsedData = (results.data as any[]).map((row: any) => ({
+                    id: `contact-${Date.now()}-${Math.random()}`,
+                    name: row['Name'] || '',
+                    linkedinUrl: row['Link'] || '',
+                    companies: row['Current Position/Company'] || '',
+                    positions: row['Specialization/Expertise'] || '',
+                    certifications: row['Key Skills/Highlights'] + (row['Notable Achievements & Roles'] ? `, ${row['Notable Achievements & Roles']}` : ''),
+                    college: row['Education (UdeM) Et Certs'] || '',
+                    status: 'Not Contacted' as ContactStatus,
+                }));
+
+                const validContacts = parsedData.filter(contact => contact.name);
+
+                setContacts(validContacts);
+
+                toast({
+                    title: "CSV Imported",
+                    description: `${validContacts.length} contacts were successfully imported.`,
+                });
+            },
+            error: (error: any) => {
+                toast({
+                    title: "CSV Parsing Error",
+                    description: error.message,
+                    variant: "destructive",
+                });
+            },
+        });
+
+        // Reset file input
+        if (event.target) {
+            event.target.value = '';
+        }
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
     return (
         <SectionWrapper
             id="networking"
@@ -182,9 +237,21 @@ export default function NetworkingSection() {
             subtitle="A private list of professional contacts to reach out to."
             className="bg-secondary"
             headerActions={
-                <Button variant="outline" size="sm" onClick={handleAddContact}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Contact
-                </Button>
+                <div className='flex gap-2'>
+                    <Button variant="outline" size="sm" onClick={handleUploadClick}>
+                        <Upload className="mr-2 h-4 w-4" /> Import CSV
+                    </Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept=".csv"
+                        onChange={handleFileUpload}
+                    />
+                    <Button variant="outline" size="sm" onClick={handleAddContact}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Contact
+                    </Button>
+                </div>
             }
         >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -195,9 +262,10 @@ export default function NetworkingSection() {
              {contacts.length === 0 && (
                 <div className="text-center text-muted-foreground py-12">
                     <p>Your networking list is empty.</p>
-                    <p>Click "Add Contact" to start building your list.</p>
+                    <p>Click "Add Contact" or "Import CSV" to start building your list.</p>
                 </div>
             )}
         </SectionWrapper>
     );
 }
+
