@@ -12,6 +12,27 @@ import { AdminModeProvider } from '@/context/admin-mode-context';
 import { AuthProvider } from '@/context/auth-context';
 import { MessageProvider } from '@/context/message-context';
 import { PortfolioDataProvider } from '@/context/portfolio-data-context';
+import NetworkingSection from '@/components/home/networking-section';
+import { useAdminMode } from '@/context/admin-mode-context';
+
+function PageContent() {
+  const { isAdminMode } = useAdminMode();
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <Header />
+      <main className="flex-grow">
+        <IntroductionSection />
+        <ProjectsSection />
+        <ExperienceSection />
+        <SkillsSection />
+        <ContactSection />
+        {isAdminMode && <NetworkingSection />}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 
 export default function HomePage() {
   return (
@@ -19,17 +40,7 @@ export default function HomePage() {
       <AdminModeProvider>
         <MessageProvider>
           <PortfolioDataProvider>
-            <div className="flex flex-col min-h-screen bg-background">
-              <Header />
-              <main className="flex-grow">
-                <IntroductionSection />
-                <ProjectsSection />
-                <ExperienceSection />
-                <SkillsSection />
-                <ContactSection />
-              </main>
-              <Footer />
-            </div>
+            <PageContent />
           </PortfolioDataProvider>
         </MessageProvider>
       </AdminModeProvider>
