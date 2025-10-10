@@ -1,6 +1,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram, Award, Building } from 'lucide-react';
+import { type NetworkingContact } from '@/context/networking-context';
+
 
 export type Project = {
   id: string;
@@ -76,11 +78,11 @@ export const personalInfo = {
     email: { url: "fgadedjro@gmail.com", visible: true },
     linkedin: { url: "https://www.linkedin.com/in/yaovigadedjro", visible: true },
     github: { url: "https://www.github.com/vizard24", visible: true },
-    twitter: { url: "https://twitter.com/johndoe", visible: true },
-    instagram: { url: "https://instagram.com/johndoe", visible: true },
-    substack: { url: "https://johndoe.substack.com", visible: true },
-    medium: { url: "https://medium.com/@johndoe", visible: true },
-    discord: { url: "https://discord.com/users/johndoe", visible: true },
+    twitter: { url: "https://twitter.com/johndoe", visible: false },
+    instagram: { url: "https://instagram.com/johndoe", visible: false },
+    substack: { url: "https://johndoe.substack.com", visible: false },
+    medium: { url: "https://medium.com/@johndoe", visible: false },
+    discord: { url: "https://discord.com/users/johndoe", visible: false },
   },
   profilePictureUrl: "https://picsum.photos/300/300",
   profilePictureHint: "professional portrait",
@@ -92,7 +94,7 @@ export const projectsData: Project[] = [
     id: 'project-1',
     title: 'Ecoleta - Recycling Locator',
     description: 'A platform connecting waste collection points with people looking to recycle. Developed during Next Level Week by Rocketseat.',
-    imageUrl: 'https://picsum.photos/600/400',
+    imageUrl: 'https://picsum.photos/seed/proj1/600/400',
     imageHint: 'nature app',
     techStack: [
       { name: 'React', icon: techIcons.CodeXml },
@@ -100,29 +102,27 @@ export const projectsData: Project[] = [
       { name: 'SQLite', icon: techIcons.Database },
       { name: 'TypeScript', icon: techIcons.CodeXml },
     ],
-    githubUrl: 'https://github.com/alexjohnson/ecoleta',
+    githubUrl: 'https://github.com/vizard24/ecoleta',
     liveDemoUrl: 'https://ecoleta.example.com',
-    caseStudyUrl: '#',
   },
   {
     id: 'project-2',
     title: 'DevFinances - Personal Finance Tracker',
     description: 'A simple application for tracking personal income and expenses. Helps users manage their finances effectively.',
-    imageUrl: 'https://picsum.photos/600/401',
+    imageUrl: 'https://picsum.photos/seed/proj2/600/400',
     imageHint: 'finance app',
     techStack: [
       { name: 'HTML', icon: techIcons.CodeXml },
       { name: 'CSS', icon: techIcons.Palette },
       { name: 'JavaScript', icon: techIcons.CodeXml },
     ],
-    githubUrl: 'https://github.com/alexjohnson/devfinances',
-    videoDemoUrl: '#',
+    githubUrl: 'https://github.com/vizard24/devfinances',
   },
   {
     id: 'project-3',
     title: 'AI Article Summarizer',
     description: 'An AI-powered tool that summarizes long articles into concise points using natural language processing.',
-    imageUrl: 'https://picsum.photos/600/402',
+    imageUrl: 'https://picsum.photos/seed/proj3/600/400',
     imageHint: 'ai technology',
     techStack: [
       { name: 'Python', icon: techIcons.Cpu },
@@ -131,8 +131,6 @@ export const projectsData: Project[] = [
       { name: 'React', icon: techIcons.CodeXml },
     ],
     liveDemoUrl: 'https://aisummarizer.example.com',
-    apiDocsUrl: '#',
-    designFilesUrl: '#',
   },
 ];
 
@@ -228,6 +226,100 @@ export const skillsData: SkillCategory[] = [
       { id: 'skill-data-analysis', name: 'Data Analysis', level: 70, icon: techIcons.BarChartBig },
     ],
   },
+];
+
+
+export const networkingContactsData: NetworkingContact[] = [
+    {
+      id: 'net-1',
+      name: 'Joe Abdul-Massih',
+      linkedinUrl: '',
+      companies: 'Bombardier',
+      positions: 'Senior Legal Counsel - IT, IP, AI, Cybersecurity & Privacy',
+      certifications: 'Cybersecurity Law, AI Governance, IT Transactions, Privacy Law, Strategic advisor, C-suite leadership, GDPR, SaaS negotiation',
+      college: 'Université de Montréal, LL.B. 2013-2016',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-2',
+      name: 'Aya Barbach',
+      linkedinUrl: '',
+      companies: 'BCF',
+      positions: 'Partner - Privacy, Data Protection & Cybersecurity',
+      certifications: 'Privacy, Data Protection, Cybersecurity Law, Licensed lawyer, risk management, board experience',
+      college: 'Université de Montréal, Master in IT Law, 2017-2019',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-3',
+      name: 'Mehdi M.',
+      linkedinUrl: '',
+      companies: 'Bell, HEC Montréal',
+      positions: 'Cybersecurity Specialist, Technical Assistant',
+      certifications: 'Vulnerability Management, ICT Security, Inclusive leadership, technical support, vulnerability audit',
+      college: 'Université de Montréal, B.Sc. Computer Science, 2024',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-4',
+      name: 'Robert Szalay',
+      linkedinUrl: '',
+      companies: 'Hydro Quebec, iA Financial, Desjardins',
+      positions: 'Cybersecurity Advisor, Analyst',
+      certifications: 'Information Security Analysis, Internal Threats, Risk analysis, compliance, threat monitoring',
+      college: 'Université de Montréal',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-5',
+      name: 'Normand Borduas',
+      linkedinUrl: '',
+      companies: 'Crowe BGK, Police Service',
+      positions: 'Digital Forensics & Cybersecurity Lead',
+      certifications: 'Digital Forensics, Security Consulting, Law Enforcement, Ethical hacking, lab management, criminalistics',
+      college: 'Université de Montréal',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-6',
+      name: 'Antoine Guilmain',
+      linkedinUrl: '',
+      companies: 'Gowling WLG, Meta',
+      positions: 'Partner & Co-Leader Cybersecurity & Data Protection, Legal Counsel, Professor',
+      certifications: 'Data Privacy Law, Cybersecurity Law, Academic Leadership, GDPR/AIDA legal consultant, academic, privacy advocacy',
+      college: 'Université de Montréal, Ph.D. Cyberjustice/IT, 2012-2018',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-7',
+      name: 'Marie-Christine Larocque',
+      linkedinUrl: '',
+      companies: 'CGI, Randstad',
+      positions: 'Strategic Talent Acquisition Partner (Cybersecurity)',
+      certifications: 'Cybersecurity Talent Acquisition, HR Leadership, Global recruitment strategy, exec sourcing, DEI initiatives',
+      college: 'Université de Montréal, Bachelor, Industrial Relations, 2011',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-8',
+      name: 'Tatiana Safi',
+      linkedinUrl: '',
+      companies: 'IT',
+      positions: 'Sr. Project Manager - CyberSecurity',
+      certifications: 'Cybersecurity Project Management, IT Operations, Project delivery, team coordination, cross-functional IT',
+      college: 'Université de Montréal',
+      status: 'Not Contacted',
+    },
+    {
+      id: 'net-9',
+      name: 'Guillaume Pinat',
+      linkedinUrl: '',
+      companies: 'IT',
+      positions: 'IT Infrastructure & Cybersecurity Graduate; System Admin/Network/Cloud',
+      certifications: 'IT Systems, Infrastructure Security, Cloud & Networks, System admin, networking, cloud security',
+      college: 'Université de Montréal',
+      status: 'Not Contacted',
+    },
 ];
 
     

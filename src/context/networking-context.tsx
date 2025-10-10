@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react';
+import { networkingContactsData } from '@/data/portfolio-data';
 
 export type ContactStatus = 'Not Contacted' | 'Contacted' | 'In Progress' | 'Follow-up Needed' | 'Closed';
 
@@ -36,9 +37,12 @@ export function NetworkingDataProvider({ children }: { children: React.ReactNode
             const storedContacts = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (storedContacts) {
                 setContacts(JSON.parse(storedContacts));
+            } else {
+                setContacts(networkingContactsData);
             }
         } catch (error) {
             console.error("Failed to read networking contacts from localStorage", error);
+            setContacts(networkingContactsData);
         }
     }, []);
 
