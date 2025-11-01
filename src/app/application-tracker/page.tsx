@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 
 type Language = 'French' | 'English';
@@ -396,7 +397,7 @@ function ApplicationTrackerPage() {
                         </TableHeader>
                         <TableBody>
                             {history.length > 0 ? history.map(item => (
-                                <TableRow key={item.id}>
+                                <TableRow key={item.id} className="group">
                                     <TableCell className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground" /> {item.jobTitle}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
@@ -410,34 +411,36 @@ function ApplicationTrackerPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>{item.createdAt ? format(new Date((item.createdAt as any).seconds * 1000), 'MMM d, yyyy') : 'N/A'}</TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                        <ApplicationDetailDialog application={item} />
-                                        {item.applicationLink && (
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
-                                                    Apply <ExternalLink className="ml-2 h-4 w-4" />
-                                                </a>
-                                            </Button>
-                                        )}
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
-                                                    <Trash2 className="h-4 w-4" />
+                                    <TableCell className="text-right">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-2">
+                                            <ApplicationDetailDialog application={item} />
+                                            {item.applicationLink && (
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
+                                                        Apply <ExternalLink className="ml-2 h-4 w-4" />
+                                                    </a>
                                                 </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                            )}
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             )) : (
