@@ -6,7 +6,7 @@ import SectionWrapper from '@/components/layout/section-wrapper';
 import { useNetworkingData, type NetworkingContact, type ContactStatus } from '@/context/networking-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Pencil, Save, Trash2, X, Linkedin, Building, Briefcase, GraduationCap, Award, Upload } from 'lucide-react';
+import { PlusCircle, Pencil, Save, Trash2, X, Linkedin, Building, Briefcase, GraduationCap, Award, Upload, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -251,6 +251,11 @@ export default function NetworkingSection() {
                     <Button variant="outline" size="sm" onClick={handleAddContact}>
                         <PlusCircle className="mr-2 h-4 w-4" /> Add Contact
                     </Button>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href="/application-tracker">
+                           <FileText className="mr-2 h-4 w-4" /> Application Tracker
+                        </Link>
+                    </Button>
                 </div>
             }
         >
@@ -268,4 +273,3 @@ export default function NetworkingSection() {
         </SectionWrapper>
     );
 }
-
