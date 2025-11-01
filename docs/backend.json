@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "JobApplication": {
+      "title": "Job Application",
+      "description": "Represents a user's tailored application for a specific job.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this application."
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "The title of the job, extracted by the AI."
+        },
+        "jobDescription": {
+          "type": "string",
+          "description": "The full job description provided by the user."
+        },
+        "tailoredResume": {
+          "type": "string",
+          "description": "The AI-generated tailored resume."
+        },
+        "coverLetter": {
+          "type": "string",
+          "description": "The AI-generated cover letter."
+        },
+        "language": {
+          "type": "string",
+          "description": "The language (e.g., 'French', 'English') the content was generated in."
+        },
+        "matchingScore": {
+          "type": "number",
+          "description": "The AI-calculated score (0-100) of how well the resume matches the job."
+        },
+        "matchingSkills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of skills the user has that match the job description."
+        },
+        "lackingSkills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of skills required by the job that are missing from the resume."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the application was created."
+        }
+      },
+      "required": ["userId", "jobTitle", "jobDescription", "tailoredResume", "coverLetter", "language", "matchingScore", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/users/{userId}/applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/JobApplication" },
+      "description": "Stores individual job applications for a user."
+    }
+  }
+}
