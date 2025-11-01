@@ -4,6 +4,10 @@ import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { NetworkingDataProvider } from '@/context/networking-context';
+import { AuthProvider } from '@/context/auth-context';
+import { AdminModeProvider } from '@/context/admin-mode-context';
+import { MessageProvider } from '@/context/message-context';
+import { PortfolioDataProvider } from '@/context/portfolio-data-context';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -28,9 +32,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NetworkingDataProvider>
-          {children}
-        </NetworkingDataProvider>
+        <AuthProvider>
+          <AdminModeProvider>
+            <MessageProvider>
+              <PortfolioDataProvider>
+                <NetworkingDataProvider>
+                  {children}
+                </NetworkingDataProvider>
+              </PortfolioDataProvider>
+            </MessageProvider>
+          </AdminModeProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

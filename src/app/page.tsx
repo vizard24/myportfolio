@@ -8,10 +8,6 @@ import ExperienceSection from '@/components/home/experience-section';
 import SkillsSection from '@/components/home/skills-section';
 import ContactSection from '@/components/home/contact-section';
 import Footer from '@/components/layout/footer';
-import { AdminModeProvider } from '@/context/admin-mode-context';
-import { AuthProvider } from '@/context/auth-context';
-import { MessageProvider } from '@/context/message-context';
-import { PortfolioDataProvider } from '@/context/portfolio-data-context';
 import NetworkingSection from '@/components/home/networking-section';
 import { useAdminMode } from '@/context/admin-mode-context';
 
@@ -36,14 +32,6 @@ function PageContent() {
 
 export default function HomePage() {
   return (
-    <AuthProvider>
-      <AdminModeProvider>
-        <MessageProvider>
-          <PortfolioDataProvider>
-            <PageContent />
-          </PortfolioDataProvider>
-        </MessageProvider>
-      </AdminModeProvider>
-    </AuthProvider>
+    <PageContent />
   );
 }
