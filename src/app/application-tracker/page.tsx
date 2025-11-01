@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useId, useEffect } from 'react';
@@ -19,10 +18,21 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -156,6 +166,24 @@ function ApplicationTrackerPage() {
 
   const handleLanguageChange = (id: string, language: Language) => {
     setApplications(prev => prev.map(app => app.id === id ? { ...app, language } : app));
+  };
+
+  const handleDeleteHistoryItem = async (id: string) => {
+    if (!user) return;
+    try {
+        await deleteDoc(doc(db, `users/${user.uid}/applications`, id));
+        toast({
+            title: "Application Deleted",
+            description: "The application has been removed from your history.",
+        });
+    } catch (error) {
+        console.error("Error deleting document: ", error);
+        toast({
+            title: "Deletion Failed",
+            description: "Could not delete the application. Please try again.",
+            variant: "destructive",
+        });
+    }
   };
 
   const handleGenerate = async (id: string) => {
@@ -391,6 +419,25 @@ function ApplicationTrackerPage() {
                                                 </a>
                                             </Button>
                                         )}
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </TableCell>
                                 </TableRow>
                             )) : (
@@ -430,5 +477,3 @@ export default function ApplicationTrackerPageWrapper() {
   
   return <ApplicationTrackerPage />;
 }
-
-    
