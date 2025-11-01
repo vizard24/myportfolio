@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "JobApplication": {
@@ -16,6 +17,10 @@
         "jobDescription": {
           "type": "string",
           "description": "The full job description provided by the user."
+        },
+        "applicationLink": {
+          "type": "string",
+          "description": "The URL to the job application page."
         },
         "tailoredResume": {
           "type": "string",
@@ -62,3 +67,5 @@
     }
   }
 }
+
+    
