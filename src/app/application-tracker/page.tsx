@@ -392,7 +392,7 @@ function ApplicationTrackerPage() {
                                 <TableHead>Match Score</TableHead>
                                 <TableHead>Language</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="w-0"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
