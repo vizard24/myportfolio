@@ -121,7 +121,9 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="sm">View</Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <FileText className="h-4 w-4" />
+                </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
                 <DialogHeader>
@@ -486,9 +488,9 @@ function ApplicationTrackerPage() {
                                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-1">
                                             <ApplicationDetailDialog application={item} />
                                             {item.applicationLink && (
-                                                <Button variant="ghost" size="sm" asChild>
+                                                <Button variant="ghost" size="icon" asChild className="h-8 w-8">
                                                     <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
-                                                        Apply <ExternalLink className="ml-2 h-4 w-4" />
+                                                        <ExternalLink className="h-4 w-4" />
                                                     </a>
                                                 </Button>
                                             )}
