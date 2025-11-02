@@ -84,9 +84,10 @@ function DocumentDisplayDialog({ title, content, onDownload }: { title: string; 
                             </Button>
                         </CardHeader>
                         <CardContent className="flex-grow overflow-hidden">
-                             <ScrollArea className="h-48">
+                             <div className="h-48 overflow-hidden relative">
                                 <pre className="text-xs font-mono whitespace-pre-wrap">{content}</pre>
-                            </ScrollArea>
+                                <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
+                            </div>
                         </CardContent>
                     </Card>
                 </Button>
@@ -156,11 +157,11 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
                     <FileText className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-5xl">
                 <DialogHeader>
                     <DialogTitle>{application.jobTitle}</DialogTitle>
                 </DialogHeader>
-                <div className="flex-grow space-y-6 overflow-y-auto py-4 pr-6">
+                <div className="space-y-6 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <DocumentDisplayDialog
                             title="Tailored Resume"
@@ -562,5 +563,3 @@ export default function ApplicationTrackerPageWrapper() {
   
   return <ApplicationTrackerPage />;
 }
-
-    
