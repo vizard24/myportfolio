@@ -86,7 +86,23 @@ export const personalInfo = {
   },
   profilePictureUrl: "https://picsum.photos/300/300",
   profilePictureHint: "professional portrait",
-  resumeSummary: `Versatile Full-Stack Developer with 5+ years of experience in designing, developing, and deploying scalable web applications. Proficient in JavaScript, Python, React, Node.js, and cloud platforms like AWS. Proven ability to lead projects, collaborate with cross-functional teams, and deliver high-quality software solutions. Strong problem-solving skills and a passion for learning new technologies. Key achievements include reducing server costs by 20% through optimization and leading the development of a new e-commerce platform that increased sales by 15%.`
+  resumeSummaries: [
+    {
+        id: 'resume-1',
+        title: 'Full-Stack Developer',
+        content: `Versatile Full-Stack Developer with 5+ years of experience in designing, developing, and deploying scalable web applications. Proficient in JavaScript, Python, React, Node.js, and cloud platforms like AWS. Proven ability to lead projects, collaborate with cross-functional teams, and deliver high-quality software solutions. Strong problem-solving skills and a passion for learning new technologies. Key achievements include reducing server costs by 20% through optimization and leading the development of a new e-commerce platform that increased sales by 15%.`
+    },
+    {
+        id: 'resume-2',
+        title: 'Cybersecurity Analyst',
+        content: 'Dedicated Cybersecurity Analyst with a background in network security and threat intelligence. Skilled in vulnerability assessment, penetration testing, and incident response. Experienced with tools like Wireshark, Metasploit, and SIEM solutions. Holder of CompTIA Security+ certification. Committed to protecting organizational assets and ensuring data integrity. Successfully identified and remediated critical vulnerabilities, reducing attack surface by 40%.'
+    },
+    {
+        id: 'resume-3',
+        title: 'AI/ML Engineer',
+        content: 'Innovative AI/ML Engineer with experience in building and deploying machine learning models. Proficient in Python, TensorFlow, and PyTorch. Expertise in natural language processing (NLP), computer vision, and predictive analytics. Developed a recommendation engine that improved user engagement by 25%. Passionate about using AI to solve complex real-world problems.'
+    }
+  ]
 };
 
 export const projectsData: Project[] = [

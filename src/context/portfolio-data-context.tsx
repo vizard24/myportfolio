@@ -45,6 +45,14 @@ export function PortfolioDataProvider({ children }: { children: React.ReactNode 
                 const parsedData = JSON.parse(storedData);
                 // Basic validation to ensure we don't load corrupted data
                 if (parsedData.personalInfo && parsedData.projects && parsedData.experience && parsedData.skills) {
+                    // Ensure resumeSummaries is an array
+                    if (!Array.isArray(parsedData.personalInfo.resumeSummaries)) {
+                        parsedData.personalInfo.resumeSummaries = [{
+                            id: 'resume-1',
+                            title: 'Default Resume',
+                            content: parsedData.personalInfo.resumeSummary || ''
+                        }];
+                    }
                     setPortfolioData(parsedData);
                 }
             }

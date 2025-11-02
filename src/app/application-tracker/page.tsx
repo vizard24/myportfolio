@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download, BrainCircuit } from 'lucide-react';
+import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download, BrainCircuit, BookUser } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -40,7 +40,8 @@ import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 
 type Language = 'French' | 'English';
@@ -50,6 +51,7 @@ interface Application {
   jobDescription: string;
   applicationLink: string;
   language: Language;
+  selectedResumeId: string;
   tailoredResume?: string;
   coverLetter?: string;
   jobTitle?: string;
@@ -219,7 +221,7 @@ function ApplicationTrackerPage() {
   const { user } = useAuth();
   const { personalInfo, setPersonalInfo } = usePortfolioData();
   const { toast } = useToast();
-  const [baseResume, setBaseResume] = useState(personalInfo.resumeSummary);
+  const [baseResumes, setBaseResumes] = useState(personalInfo.resumeSummaries);
   const [applications, setApplications] = useState<Application[]>([]);
   const [history, setHistory] = useState<SavedApplication[]>([]);
   const [marketSkills, setMarketSkills] = useState<SkillAnalysis | null>(null);
@@ -227,8 +229,16 @@ function ApplicationTrackerPage() {
   const uniqueId = useId();
 
   useEffect(() => {
-    setPersonalInfo({ ...personalInfo, resumeSummary: baseResume });
-  }, [baseResume]);
+    setPersonalInfo({ ...personalInfo, resumeSummaries: baseResumes });
+  }, [baseResumes]);
+
+  const handleResumeTitleChange = (id: string, newTitle: string) => {
+    setBaseResumes(prev => prev.map(r => r.id === id ? { ...r, title: newTitle } : r));
+  };
+  
+  const handleResumeContentChange = (id: string, newContent: string) => {
+    setBaseResumes(prev => prev.map(r => r.id === id ? { ...r, content: newContent } : r));
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -264,7 +274,7 @@ function ApplicationTrackerPage() {
   }, [history]);
 
   const addApplication = () => {
-    setApplications(prev => [...prev, { id: `app-${uniqueId}-${prev.length}`, jobDescription: '', applicationLink: '', language: 'French', isLoading: false }]);
+    setApplications(prev => [...prev, { id: `app-${uniqueId}-${prev.length}`, jobDescription: '', applicationLink: '', language: 'French', selectedResumeId: baseResumes[0].id, isLoading: false }]);
   };
 
   const removeApplication = (id: string) => {
@@ -277,6 +287,10 @@ function ApplicationTrackerPage() {
 
   const handleLanguageChange = (id: string, language: Language) => {
     setApplications(prev => prev.map(app => app.id === id ? { ...app, language } : app));
+  };
+
+  const handleResumeSelectionChange = (id: string, resumeId: string) => {
+    setApplications(prev => prev.map(app => app.id === id ? { ...app, selectedResumeId: resumeId } : app));
   };
 
   const handleDeleteHistoryItem = async (id: string) => {
@@ -299,12 +313,14 @@ function ApplicationTrackerPage() {
 
   const handleGenerate = async (id: string) => {
     const application = applications.find(app => app.id === id);
+    const selectedResume = baseResumes.find(r => r.id === application?.selectedResumeId);
+
     if (!application || !application.jobDescription) {
       toast({ title: "Job Description Missing", description: "Please paste the job description before generating.", variant: "destructive" });
       return;
     }
-    if (!baseResume) {
-      toast({ title: "Base Resume Missing", description: "Please paste your base resume before generating.", variant: "destructive" });
+    if (!selectedResume || !selectedResume.content) {
+      toast({ title: "Base Resume Missing", description: "Please select a valid base resume and ensure it has content.", variant: "destructive" });
       return;
     }
 
@@ -312,7 +328,7 @@ function ApplicationTrackerPage() {
 
     try {
       const result = await tailorResumeAndCoverLetter({
-        resume: baseResume,
+        resume: selectedResume.content,
         jobDescription: application.jobDescription,
         language: application.language,
       });
@@ -361,18 +377,35 @@ function ApplicationTrackerPage() {
         </p>
 
         <Card className="mb-8">
-            <CardHeader>
-                <CardTitle>Your Base Resume</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Textarea
-                    value={baseResume}
-                    onChange={(e) => setBaseResume(e.target.value)}
-                    placeholder="Paste your master resume here... Your content will be saved automatically."
+          <CardHeader>
+            <CardTitle>Your Base Resumes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue={baseResumes[0]?.id || 'resume-1'}>
+              <TabsList>
+                {baseResumes.map(resume => (
+                  <TabsTrigger key={resume.id} value={resume.id}>
+                    <Input
+                      value={resume.title}
+                      onChange={(e) => handleResumeTitleChange(resume.id, e.target.value)}
+                      className="border-none focus-visible:ring-0 text-center bg-transparent"
+                    />
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {baseResumes.map(resume => (
+                <TabsContent key={resume.id} value={resume.id} className="mt-4">
+                  <Textarea
+                    value={resume.content}
+                    onChange={(e) => handleResumeContentChange(resume.id, e.target.value)}
+                    placeholder={`Paste the content for your "${resume.title}" resume here...`}
                     rows={10}
                     className="text-sm"
-                />
-            </CardContent>
+                  />
+                </TabsContent>
+              ))}
+            </Tabs>
+          </CardContent>
         </Card>
 
         <div className="space-y-4">
@@ -392,16 +425,33 @@ function ApplicationTrackerPage() {
                                 rows={6}
                             />
                         </div>
-                        <div>
-                             <label htmlFor={`apply-link-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
-                                Application Link (Optional)
-                            </label>
-                            <Input
-                                id={`apply-link-${app.id}`}
-                                value={app.applicationLink}
-                                onChange={(e) => handleInputChange(app.id, 'applicationLink', e.target.value)}
-                                placeholder="https://www.linkedin.com/jobs/view/..."
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor={`apply-link-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
+                                    Application Link (Optional)
+                                </label>
+                                <Input
+                                    id={`apply-link-${app.id}`}
+                                    value={app.applicationLink}
+                                    onChange={(e) => handleInputChange(app.id, 'applicationLink', e.target.value)}
+                                    placeholder="https://www.linkedin.com/jobs/view/..."
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor={`resume-select-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
+                                    Base Resume to Use
+                                </label>
+                                <Select value={app.selectedResumeId} onValueChange={(value) => handleResumeSelectionChange(app.id, value)}>
+                                    <SelectTrigger id={`resume-select-${app.id}`}>
+                                        <SelectValue placeholder="Select a base resume" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {baseResumes.map(resume => (
+                                            <SelectItem key={resume.id} value={resume.id}>{resume.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                      <div className="flex justify-between items-center">
