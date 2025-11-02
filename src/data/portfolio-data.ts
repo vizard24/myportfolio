@@ -29,6 +29,37 @@ export type Experience = {
   iconName?: string;
 };
 
+export type ResumeSummary = {
+  id: string;
+  title: string;
+  content: string;
+};
+
+export type ContactLink = {
+  url: string;
+  visible: boolean;
+}
+
+export type PersonalInfo = {
+  name: string;
+  title: string;
+  introduction: string;
+  contact: {
+    email: ContactLink;
+    linkedin: ContactLink;
+    github: ContactLink;
+    twitter: ContactLink;
+    instagram: ContactLink;
+    substack: ContactLink;
+    medium: ContactLink;
+    discord: ContactLink;
+  };
+  profilePictureUrl: string;
+  profilePictureHint: string;
+  resumeSummaries: ResumeSummary[];
+}
+
+
 export const experienceIcons: { [key: string]: LucideIcon } = {
   Briefcase,
   GraduationCap,
@@ -81,7 +112,7 @@ export const techIcons: { [key: string]: LucideIcon } = {
 };
 
 
-export const personalInfo = {
+export const personalInfo: PersonalInfo = {
   name: "Yaovi Gadedjro",
   title: "Innovative Full-Stack Developer",
   introduction: "A passionate and results-driven Full-Stack Developer with a knack for creating seamless and engaging user experiences. Eager to leverage modern technologies to build impactful solutions.",
@@ -114,7 +145,6 @@ export const personalInfo = {
         content: 'Innovative AI/ML Engineer with experience in building and deploying machine learning models. Proficient in Python, TensorFlow, and PyTorch. Expertise in natural language processing (NLP), computer vision, and predictive analytics. Developed a recommendation engine that improved user engagement by 25%. Passionate about using AI to solve complex real-world problems.'
     }
   ],
-  networkingContacts: [],
 };
 
 export const projectsData: Project[] = [
@@ -349,5 +379,3 @@ export const networkingContactsData: NetworkingContact[] = [
       status: 'Not Contacted',
     },
 ];
-
-    

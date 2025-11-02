@@ -3,7 +3,6 @@
 
 import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { usePortfolioData } from './portfolio-data-context';
-import { networkingContactsData } from '@/data/portfolio-data';
 
 export type ContactStatus = 'Not Contacted' | 'Contacted' | 'In Progress' | 'Follow-up Needed' | 'Closed';
 
@@ -30,16 +29,10 @@ const NetworkingDataContext = createContext<NetworkingDataContextType | undefine
 
 
 export function NetworkingDataProvider({ children }: { children: React.ReactNode }) {
-    const { personalInfo, setPersonalInfo } = usePortfolioData();
-    // @ts-ignore
-    const contacts = personalInfo.networkingContacts || [];
+    const { networkingContacts, setNetworkingContacts } = usePortfolioData();
     
     const setContacts = (newContacts: NetworkingContact[]) => {
-        setPersonalInfo({
-            ...personalInfo,
-            // @ts-ignore
-            networkingContacts: newContacts
-        });
+        setNetworkingContacts(newContacts);
     }
 
     const addContact = useCallback((newContactData: Omit<NetworkingContact, 'id'>) => {
@@ -47,27 +40,27 @@ export function NetworkingDataProvider({ children }: { children: React.ReactNode
             ...newContactData,
             id: `contact-${Date.now()}`,
         };
-        const updatedContacts = [newContact, ...contacts];
+        const updatedContacts = [newContact, ...(networkingContacts || [])];
         setContacts(updatedContacts);
-    }, [contacts, setContacts]);
+    }, [networkingContacts, setContacts]);
 
     const updateContact = useCallback((updatedContact: NetworkingContact) => {
-        const updatedContacts = contacts.map((c: NetworkingContact) => c.id === updatedContact.id ? updatedContact : c);
+        const updatedContacts = (networkingContacts || []).map((c: NetworkingContact) => c.id === updatedContact.id ? updatedContact : c);
         setContacts(updatedContacts);
-    }, [contacts, setContacts]);
+    }, [networkingContacts, setContacts]);
 
     const deleteContact = useCallback((id: string) => {
-        const updatedContacts = contacts.filter((c: NetworkingContact) => c.id !== id);
+        const updatedContacts = (networkingContacts || []).filter((c: NetworkingContact) => c.id !== id);
         setContacts(updatedContacts);
-    }, [contacts, setContacts]);
+    }, [networkingContacts, setContacts]);
 
     const value = useMemo(() => ({
-        contacts,
+        contacts: networkingContacts || [],
         setContacts,
         addContact,
         updateContact,
         deleteContact,
-    }), [contacts, setContacts, addContact, updateContact, deleteContact]);
+    }), [networkingContacts, setContacts, addContact, updateContact, deleteContact]);
 
     return (
         <NetworkingDataContext.Provider value={value}>
