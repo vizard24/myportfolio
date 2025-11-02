@@ -92,7 +92,7 @@ function DocumentDisplayDialog({ title, content, onDownload }: { title: string; 
                     </Card>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-gradient-to-br from-accent/10 to-background">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
@@ -563,3 +563,5 @@ export default function ApplicationTrackerPageWrapper() {
   
   return <ApplicationTrackerPage />;
 }
+
+    
