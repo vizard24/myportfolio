@@ -86,13 +86,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await signOut(auth); // Sign out the unauthorized user.
         setUser(null);
       }
-    } catch (error) {
-      console.error("Error during Google login:", error);
-      toast({
-        title: "Login Failed",
-        description: "Something went wrong during login. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+        // Don't show an error toast if the user simply closed the popup.
+        if (error.code === 'auth/popup-closed-by-user') {
+            console.log("Login cancelled by user.");
+        } else {
+            console.error("Error during Google login:", error);
+            toast({
+                title: "Login Failed",
+                description: "Something went wrong during login. Please try again.",
+                variant: "destructive",
+            });
+        }
     } finally {
       setLoading(false);
     }
