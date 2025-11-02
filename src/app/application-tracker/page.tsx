@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { usePortfolioData } from '@/context/portfolio-data-context';
 import { tailorResumeAndCoverLetter } from '@/ai/flows/resume-flow';
+import { analyzeSkillsFromJobs } from '@/ai/flows/skills-analysis-flow';
+import type { SkillAnalysis } from '@/ai/schemas/skills-analysis-schema';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download } from 'lucide-react';
+import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download, BrainCircuit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -220,6 +222,8 @@ function ApplicationTrackerPage() {
   const [baseResume, setBaseResume] = useState(personalInfo.resumeSummary);
   const [applications, setApplications] = useState<Application[]>([]);
   const [history, setHistory] = useState<SavedApplication[]>([]);
+  const [marketSkills, setMarketSkills] = useState<SkillAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const uniqueId = useId();
 
   useEffect(() => {
@@ -235,6 +239,29 @@ function ApplicationTrackerPage() {
     });
     return () => unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    const runAnalysis = async () => {
+        if (history.length > 0) {
+            setIsAnalyzing(true);
+            try {
+                const jobDescriptions = history.map(app => app.jobDescription);
+                const result = await analyzeSkillsFromJobs({ jobDescriptions });
+                setMarketSkills(result);
+            } catch (error) {
+                console.error("Failed to analyze market skills:", error);
+                toast({
+                    title: "Skills Analysis Failed",
+                    description: "Could not analyze job description history.",
+                    variant: "destructive"
+                });
+            } finally {
+                setIsAnalyzing(false);
+            }
+        }
+    };
+    runAnalysis();
+  }, [history]);
 
   const addApplication = () => {
     setApplications(prev => [...prev, { id: `app-${uniqueId}-${prev.length}`, jobDescription: '', applicationLink: '', language: 'French', isLoading: false }]);
@@ -538,6 +565,58 @@ function ApplicationTrackerPage() {
                 </CardContent>
             </Card>
         </div>
+
+        <div className="mt-16">
+            <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
+                <BrainCircuit className="h-7 w-7" />
+                Market Skills Analysis
+            </h2>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Top Required Skills</CardTitle>
+                    <p className="text-muted-foreground text-sm">
+                        Based on the {history.length} job description(s) you've saved. This analysis updates automatically.
+                    </p>
+                </CardHeader>
+                <CardContent>
+                    {isAnalyzing ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader className="h-4 w-4 animate-spin" />
+                            <span>Analyzing job descriptions...</span>
+                        </div>
+                    ) : marketSkills ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div>
+                                <h3 className="font-semibold mb-3 text-primary">Technical Skills</h3>
+                                <ul className="space-y-2 text-sm">
+                                    {marketSkills.technicalSkills.map(skill => (
+                                        <li key={skill.skill} className="flex justify-between items-center">
+                                            <span>{skill.skill}</span>
+                                            <Badge variant="secondary">{skill.count} occurrence(s)</Badge>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold mb-3 text-primary">Soft Skills</h3>
+                                 <ul className="space-y-2 text-sm">
+                                    {marketSkills.softSkills.map(skill => (
+                                        <li key={skill.skill} className="flex justify-between items-center">
+                                            <span>{skill.skill}</span>
+                                            <Badge variant="secondary">{skill.count} occurrence(s)</Badge>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground text-sm">
+                            No skills data to display. Add job descriptions to start the analysis.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
       </main>
       <Footer />
     </div>
@@ -563,5 +642,3 @@ export default function ApplicationTrackerPageWrapper() {
   
   return <ApplicationTrackerPage />;
 }
-
-    
