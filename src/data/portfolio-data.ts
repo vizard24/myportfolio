@@ -10,7 +10,7 @@ export type Project = {
   description: string;
   imageUrl: string;
   imageHint?: string;
-  techStack: { name: string; icon?: LucideIcon }[];
+  techStack: { name: string; iconName?: keyof typeof techIcons }[];
   githubUrl?: string;
   liveDemoUrl?: string;
   caseStudyUrl?: string;
@@ -25,7 +25,7 @@ export type Experience = {
   title: string;
   institution: string;
   dateRange: string;
-  description: string | string[];
+  description: string[];
   iconName?: string;
 };
 
@@ -44,7 +44,7 @@ export type Skill = {
   id: string;
   name: string;
   level: number; // 0-100 for progress bar
-  icon?: LucideIcon;
+  iconName?: keyof typeof techIcons;
 };
 
 export type SkillCategory = {
@@ -54,19 +54,30 @@ export type SkillCategory = {
 }
 
 export const techIcons: { [key: string]: LucideIcon } = {
-  CodeXml,
-  Cpu,
-  Database,
-  Palette,
-  GitMerge,
-  Settings,
-  Rocket,
-  Cloud,
-  TestTube2,
-  Users,
-  Brain,
-  MessageSquare,
-  BarChartBig,
+  React: CodeXml,
+  NextJS: CodeXml,
+  VueJS: CodeXml,
+  TypeScript: CodeXml,
+  TailwindCSS: Palette,
+  NodeJS: Cpu,
+  ExpressJS: GitMerge,
+  Python: Cpu,
+  Django: Settings,
+  SQL: Database,
+  MongoDB: Database,
+  Redis: Database,
+  Docker: Rocket,
+  Kubernetes: Cloud,
+  AWS: Cloud,
+  GCP: Cloud,
+  CICD: GitMerge,
+  Git: GitMerge,
+  Testing: TestTube2,
+  Agile: Users,
+  Communication: MessageSquare,
+  ProblemSolving: Brain,
+  DataAnalysis: BarChartBig,
+  Default: CodeXml,
 };
 
 
@@ -102,7 +113,8 @@ export const personalInfo = {
         title: 'AI/ML Engineer',
         content: 'Innovative AI/ML Engineer with experience in building and deploying machine learning models. Proficient in Python, TensorFlow, and PyTorch. Expertise in natural language processing (NLP), computer vision, and predictive analytics. Developed a recommendation engine that improved user engagement by 25%. Passionate about using AI to solve complex real-world problems.'
     }
-  ]
+  ],
+  networkingContacts: [],
 };
 
 export const projectsData: Project[] = [
@@ -113,10 +125,10 @@ export const projectsData: Project[] = [
     imageUrl: 'https://picsum.photos/seed/proj1/600/400',
     imageHint: 'nature app',
     techStack: [
-      { name: 'React', icon: techIcons.CodeXml },
-      { name: 'Node.js', icon: techIcons.Cpu },
-      { name: 'SQLite', icon: techIcons.Database },
-      { name: 'TypeScript', icon: techIcons.CodeXml },
+      { name: 'React', iconName: 'React' },
+      { name: 'Node.js', iconName: 'NodeJS' },
+      { name: 'SQLite', iconName: 'SQL' },
+      { name: 'TypeScript', iconName: 'TypeScript' },
     ],
     githubUrl: 'https://github.com/vizard24/ecoleta',
     liveDemoUrl: 'https://ecoleta.example.com',
@@ -128,9 +140,9 @@ export const projectsData: Project[] = [
     imageUrl: 'https://picsum.photos/seed/proj2/600/400',
     imageHint: 'finance app',
     techStack: [
-      { name: 'HTML', icon: techIcons.CodeXml },
-      { name: 'CSS', icon: techIcons.Palette },
-      { name: 'JavaScript', icon: techIcons.CodeXml },
+      { name: 'HTML', iconName: 'Default' },
+      { name: 'CSS', iconName: 'TailwindCSS' },
+      { name: 'JavaScript', iconName: 'TypeScript' },
     ],
     githubUrl: 'https://github.com/vizard24/devfinances',
   },
@@ -141,10 +153,10 @@ export const projectsData: Project[] = [
     imageUrl: 'https://picsum.photos/seed/proj3/600/400',
     imageHint: 'ai technology',
     techStack: [
-      { name: 'Python', icon: techIcons.Cpu },
-      { name: 'Flask', icon: techIcons.Cloud },
-      { name: 'NLP', icon: techIcons.Brain },
-      { name: 'React', icon: techIcons.CodeXml },
+      { name: 'Python', iconName: 'Python' },
+      { name: 'Flask', iconName: 'Cloud' },
+      { name: 'NLP', iconName: 'ProblemSolving' },
+      { name: 'React', iconName: 'React' },
     ],
     liveDemoUrl: 'https://aisummarizer.example.com',
   },
@@ -183,7 +195,7 @@ export const experienceData: Experience[] = [
     title: 'B.S. in Computer Science',
     institution: 'State University',
     dateRange: 'Aug 2014 - May 2018',
-    description: 'Graduated with honors. Focus on software development and artificial intelligence. Capstone project: "Predictive Analytics for Retail".',
+    description: ['Graduated with honors. Focus on software development and artificial intelligence. Capstone project: "Predictive Analytics for Retail".'],
     iconName: 'GraduationCap',
   },
 ];
@@ -193,53 +205,53 @@ export const skillsData: SkillCategory[] = [
     id: 'cat-frontend',
     name: 'Frontend Development',
     skills: [
-      { id: 'skill-react', name: 'React', level: 90, icon: techIcons.CodeXml },
-      { id: 'skill-nextjs', name: 'Next.js', level: 85, icon: techIcons.CodeXml },
-      { id: 'skill-vue', name: 'Vue.js', level: 70, icon: techIcons.CodeXml },
-      { id: 'skill-ts', name: 'TypeScript', level: 90, icon: techIcons.CodeXml },
-      { id: 'skill-tailwind', name: 'Tailwind CSS', level: 80, icon: techIcons.Palette },
+      { id: 'skill-react', name: 'React', level: 90, iconName: 'React' },
+      { id: 'skill-nextjs', name: 'Next.js', level: 85, iconName: 'NextJS' },
+      { id: 'skill-vue', name: 'Vue.js', level: 70, iconName: 'VueJS' },
+      { id: 'skill-ts', name: 'TypeScript', level: 90, iconName: 'TypeScript' },
+      { id: 'skill-tailwind', name: 'Tailwind CSS', level: 80, iconName: 'TailwindCSS' },
     ],
   },
   {
     id: 'cat-backend',
     name: 'Backend Development',
     skills: [
-      { id: 'skill-nodejs', name: 'Node.js', level: 90, icon: techIcons.Cpu },
-      { id: 'skill-express', name: 'Express.js', level: 85, icon: techIcons.GitMerge },
-      { id: 'skill-python', name: 'Python', level: 80, icon: techIcons.Cpu },
-      { id: 'skill-django', name: 'Django', level: 75, icon: techIcons.Settings },
+      { id: 'skill-nodejs', name: 'Node.js', level: 90, iconName: 'NodeJS' },
+      { id: 'skill-express', name: 'Express.js', level: 85, iconName: 'ExpressJS' },
+      { id: 'skill-python', name: 'Python', level: 80, iconName: 'Python' },
+      { id: 'skill-django', name: 'Django', level: 75, iconName: 'Django' },
     ],
   },
   {
     id: 'cat-databases',
     name: 'Databases',
     skills: [
-      { id: 'skill-sql', name: 'SQL (PostgreSQL, MySQL)', level: 85, icon: techIcons.Database },
-      { id: 'skill-mongo', name: 'MongoDB', level: 75, icon: techIcons.Database },
-      { id: 'skill-redis', name: 'Redis', level: 70, icon: techIcons.Database },
+      { id: 'skill-sql', name: 'SQL (PostgreSQL, MySQL)', level: 85, iconName: 'SQL' },
+      { id: 'skill-mongo', name: 'MongoDB', level: 75, iconName: 'MongoDB' },
+      { id: 'skill-redis', name: 'Redis', level: 70, iconName: 'Redis' },
     ],
   },
   {
     id: 'cat-devops',
     name: 'DevOps & Cloud',
     skills: [
-      { id: 'skill-docker', name: 'Docker', level: 80, icon: techIcons.Rocket },
-      { id: 'skill-k8s', name: 'Kubernetes', level: 65, icon: techIcons.Cloud },
-      { id: 'skill-aws', name: 'AWS', level: 75, icon: techIcons.Cloud },
-      { id: 'skill-gcp', name: 'Google Cloud', level: 70, icon: techIcons.Cloud },
-      { id: 'skill-cicd', name: 'CI/CD (GitHub Actions)', level: 80, icon: techIcons.GitMerge },
+      { id: 'skill-docker', name: 'Docker', level: 80, iconName: 'Docker' },
+      { id: 'skill-k8s', name: 'Kubernetes', level: 65, iconName: 'Kubernetes' },
+      { id: 'skill-aws', name: 'AWS', level: 75, iconName: 'AWS' },
+      { id: 'skill-gcp', name: 'Google Cloud', level: 70, iconName: 'GCP' },
+      { id: 'skill-cicd', name: 'CI/CD (GitHub Actions)', level: 80, iconName: 'CICD' },
     ],
   },
   {
     id: 'cat-others',
     name: 'Other Skills',
     skills: [
-      { id: 'skill-git', name: 'Git & GitHub', level: 95, icon: techIcons.GitMerge },
-      { id: 'skill-testing', name: 'Testing (Jest, Cypress)', level: 80, icon: techIcons.TestTube2 },
-      { id: 'skill-agile', name: 'Agile Methodologies', level: 90, icon: techIcons.Users },
-      { id: 'skill-comms', name: 'Communication', level: 90, icon: techIcons.MessageSquare },
-      { id: 'skill-problem-solving', name: 'Problem Solving', level: 95, icon: techIcons.Brain },
-      { id: 'skill-data-analysis', name: 'Data Analysis', level: 70, icon: techIcons.BarChartBig },
+      { id: 'skill-git', name: 'Git & GitHub', level: 95, iconName: 'Git' },
+      { id: 'skill-testing', name: 'Testing (Jest, Cypress)', level: 80, iconName: 'Testing' },
+      { id: 'skill-agile', name: 'Agile Methodologies', level: 90, iconName: 'Agile' },
+      { id: 'skill-comms', name: 'Communication', level: 90, iconName: 'Communication' },
+      { id: 'skill-problem-solving', name: 'Problem Solving', level: 95, iconName: 'ProblemSolving' },
+      { id: 'skill-data-analysis', name: 'Data Analysis', level: 70, iconName: 'DataAnalysis' },
     ],
   },
 ];

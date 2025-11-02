@@ -260,7 +260,7 @@ export default function NetworkingSection() {
             }
         >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {contacts.map(contact => (
+                {contacts.map((contact: NetworkingContact) => (
                     <ContactCard key={contact.id} contact={contact} onSave={updateContact} onDelete={deleteContact} />
                 ))}
             </div>

@@ -6,16 +6,15 @@ import { useAuth } from './auth-context';
 
 interface AdminModeContextType {
   isAdminMode: boolean;
-  toggleAdminMode: () => void; // This will now either log in or log out
+  toggleAdminMode: () => void;
 }
 
 const AdminModeContext = createContext<AdminModeContextType | undefined>(undefined);
 
 export function AdminModeProvider({ children }: { children: React.ReactNode }) {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, loading } = useAuth();
 
-  // Admin mode is on if the user is logged in.
-  const isAdminMode = !!user; 
+  const isAdminMode = !!user && !loading; 
 
   const toggleAdminMode = () => {
     if (isAdminMode) {
@@ -25,7 +24,7 @@ export function AdminModeProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
-  const value = useMemo(() => ({ isAdminMode, toggleAdminMode }), [isAdminMode]);
+  const value = useMemo(() => ({ isAdminMode, toggleAdminMode }), [isAdminMode, toggleAdminMode]);
 
   return (
     <AdminModeContext.Provider value={value}>

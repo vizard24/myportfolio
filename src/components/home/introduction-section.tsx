@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Download, Pencil, Save, Upload, Eye, EyeOff, MessageSquare, X } from 'lucide-react';
+import { Download, Pencil, Save, Upload, Eye, EyeOff, MessageSquare, X, Loader } from 'lucide-react';
 import SectionWrapper from '@/components/layout/section-wrapper';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { useState, useEffect, useRef } from 'react';
@@ -21,7 +21,7 @@ export default function IntroductionSection() {
   const { isAdminMode } = useAdminMode();
   const { hasUnreadMessages } = useMessages();
   const { toast } = useToast();
-  const { personalInfo, setPersonalInfo } = usePortfolioData();
+  const { personalInfo, setPersonalInfo, loading: isPortfolioLoading } = usePortfolioData();
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
@@ -141,6 +141,16 @@ export default function IntroductionSection() {
     { key: 'substack', label: 'Substack' },
     { key: 'discord', label: 'Discord' },
   ];
+
+  if (isPortfolioLoading && isAdminMode) {
+    return (
+        <SectionWrapper id="home" className="bg-secondary/50">
+             <div className="flex justify-center items-center h-96">
+                <Loader className="h-8 w-8 animate-spin" />
+            </div>
+        </SectionWrapper>
+    )
+  }
 
 
   return (

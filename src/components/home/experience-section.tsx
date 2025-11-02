@@ -54,15 +54,15 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
     setEditedItem(initialItem);
   }, [initialItem]);
   
-  const Icon = experienceIcons[editedItem.iconName || ''] || (editedItem.type === 'work' ? Briefcase : GraduationCap);
-  const iconColor = iconColorClasses[editedItem.iconName || ''] || iconColorClasses.Default;
+  const Icon = experienceIcons[editedItem.iconName || 'Briefcase'] || (editedItem.type === 'work' ? Briefcase : GraduationCap);
+  const iconColor = iconColorClasses[editedItem.iconName || 'Default'] || iconColorClasses.Default;
 
   const handleSave = () => {
     onSave(editedItem);
     setIsEditing(false);
     toast({
       title: "Experience Saved",
-      description: "Your changes have been saved locally.",
+      description: "Your changes have been saved.",
     });
   };
 
@@ -95,7 +95,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
 
   const descriptionAsString = Array.isArray(editedItem.description) 
     ? editedItem.description.join('\n') 
-    : editedItem.description;
+    : '';
 
   const currentItem = isEditing ? editedItem : initialItem;
 
@@ -140,8 +140,8 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
                   <Select value={editedItem.iconName} onValueChange={handleIconChange}>
                     <SelectTrigger className="w-20 h-10">
                       <SelectValue placeholder="Icon" >
-                        {experienceIcons[editedItem.iconName || ''] ? 
-                          React.createElement(experienceIcons[editedItem.iconName || ''], { className: 'h-5 w-5' }) : 
+                        {experienceIcons[editedItem.iconName || 'Briefcase'] ? 
+                          React.createElement(experienceIcons[editedItem.iconName || 'Briefcase'], { className: 'h-5 w-5' }) : 
                           <Smile className="h-5 w-5" />}
                       </SelectValue>
                     </SelectTrigger>
@@ -184,8 +184,6 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
                 placeholder="Enter description points, one per line."
                 className="text-sm"
               />
-          ) : typeof currentItem.description === 'string' ? (
-            <p className="text-sm text-foreground/80 leading-relaxed">{currentItem.description}</p>
           ) : (
             <ul className="list-disc list-inside space-y-1 text-sm text-foreground/80 leading-relaxed">
               {currentItem.description.map((desc, index) => (

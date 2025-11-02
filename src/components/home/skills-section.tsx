@@ -32,10 +32,10 @@ import {
 } from '@/components/ui/select';
 import { Pencil, PlusCircle, Save, X, Trash2, Smile } from 'lucide-react';
 import { usePortfolioData } from '@/context/portfolio-data-context';
+import type { LucideIcon } from 'lucide-react';
 
 function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isEditing: boolean; onUpdate: (updatedSkill: Skill) => void; onDelete: (skillId: string) => void; }) {
-  const iconName = Object.keys(techIcons).find(key => techIcons[key as keyof typeof techIcons].displayName === (skill.icon as any)?.displayName);
-  const Icon = iconName ? techIcons[iconName as keyof typeof techIcons] : null;
+  const Icon = skill.iconName ? techIcons[skill.iconName] : null;
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onUpdate({ ...skill, name: e.target.value });
@@ -46,8 +46,7 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
   };
 
   const handleIconChange = (iconName: string) => {
-    const iconKey = iconName as keyof typeof techIcons;
-    onUpdate({ ...skill, icon: techIcons[iconKey] });
+    onUpdate({ ...skill, iconName: iconName as keyof typeof techIcons });
   };
 
 
@@ -55,7 +54,7 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
     <div className="mb-4 group">
        {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
-                <Select value={Object.keys(techIcons).find(key => techIcons[key as keyof typeof techIcons] === skill.icon)} onValueChange={handleIconChange}>
+                <Select value={skill.iconName} onValueChange={handleIconChange}>
                     <SelectTrigger className="w-12 h-8">
                          <SelectValue>
                             {Icon ? <Icon className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
@@ -131,7 +130,7 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
     setIsEditing(false);
     toast({
       title: "Skill Category Saved",
-      description: "Your changes have been saved locally.",
+      description: "Your changes have been saved.",
     });
   };
 
@@ -168,7 +167,7 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
         id: `skill-${Date.now()}`,
         name: 'New Skill',
         level: 50,
-        icon: Smile,
+        iconName: 'Default',
     };
     setEditedCategory(prev => ({ ...prev, skills: [...prev.skills, newSkill]}));
   };

@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -8,9 +9,14 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    // Users can only manage their own applications
-    match /users/{userId}/applications/{applicationId} {
+    match /users/{userId} {
+      // Users can only read and write their own profile data
       allow read, write: if isOwner(userId);
+
+      // Users can only manage their own applications
+      match /applications/{applicationId} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }

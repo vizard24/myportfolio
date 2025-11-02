@@ -2,10 +2,11 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react';
+import { useAuth } from './auth-context';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { personalInfo as defaultPersonalInfo, projectsData as defaultProjectsData, experienceData as defaultExperienceData, skillsData as defaultSkillsData } from '@/data/portfolio-data';
 import type { Project, Experience, SkillCategory } from '@/data/portfolio-data';
-
-const PORTFOLIO_DATA_KEY = 'portfolio-data';
 
 // Define the shape of your portfolio data
 interface PortfolioData {
@@ -18,90 +19,119 @@ interface PortfolioData {
 interface PortfolioDataContextType {
   personalInfo: typeof defaultPersonalInfo;
   setPersonalInfo: (info: typeof defaultPersonalInfo) => void;
-  resetPersonalInfo: () => void;
   projects: Project[];
   setProjects: (projects: Project[]) => void;
   experience: Experience[];
   setExperience: (experience: Experience[]) => void;
   skills: SkillCategory[];
   setSkills: (skills: SkillCategory[]) => void;
+  loading: boolean;
 }
 
 const PortfolioDataContext = createContext<PortfolioDataContextType | undefined>(undefined);
 
 export function PortfolioDataProvider({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
     const [portfolioData, setPortfolioData] = useState<PortfolioData>({
         personalInfo: defaultPersonalInfo,
         projects: defaultProjectsData,
         experience: defaultExperienceData,
         skills: defaultSkillsData,
     });
+    const [loading, setLoading] = useState(true);
 
-    // Load data from localStorage on initial render
+    const docRef = useMemo(() => user ? doc(db, 'users', user.uid) : null, [user]);
+
+    // Load data from Firestore on initial render and listen for changes
     useEffect(() => {
-        try {
-            const storedData = localStorage.getItem(PORTFOLIO_DATA_KEY);
-            if (storedData) {
-                const parsedData = JSON.parse(storedData);
-                // Basic validation to ensure we don't load corrupted data
-                if (parsedData.personalInfo && parsedData.projects && parsedData.experience && parsedData.skills) {
-                    // Ensure resumeSummaries is an array
-                    if (!Array.isArray(parsedData.personalInfo.resumeSummaries)) {
-                        parsedData.personalInfo.resumeSummaries = [{
-                            id: 'resume-1',
-                            title: 'Default Resume',
-                            content: parsedData.personalInfo.resumeSummary || ''
-                        }];
-                    }
-                    setPortfolioData(parsedData);
+        if (!docRef) {
+            setLoading(false);
+            // If no user, reset to default data
+            setPortfolioData({
+                personalInfo: defaultPersonalInfo,
+                projects: defaultProjectsData,
+                experience: defaultExperienceData,
+                skills: defaultSkillsData,
+            });
+            return;
+        }
+
+        setLoading(true);
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data() as PortfolioData;
+                 // Ensure resumeSummaries is an array for backwards compatibility
+                if (data.personalInfo && !Array.isArray(data.personalInfo.resumeSummaries)) {
+                    // @ts-ignore
+                    data.personalInfo.resumeSummaries = [{
+                        id: 'resume-1',
+                        title: 'Default Resume',
+                        content: data.personalInfo.resumeSummary || ''
+                    }];
                 }
+                setPortfolioData(data);
+            } else {
+                // If document doesn't exist, create it with default data
+                const defaultData = {
+                    personalInfo: defaultPersonalInfo,
+                    projects: defaultProjectsData,
+                    experience: defaultExperienceData,
+                    skills: defaultSkillsData,
+                };
+                setDoc(docRef, defaultData);
+                setPortfolioData(defaultData);
             }
-        } catch (error) {
-            console.error("Failed to read portfolio data from localStorage", error);
-        }
-    }, []);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching portfolio data:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [docRef]);
     
-    // Save data to localStorage whenever it changes
-    useEffect(() => {
-        try {
-            localStorage.setItem(PORTFOLIO_DATA_KEY, JSON.stringify(portfolioData));
-        } catch (error) {
-             console.error("Failed to save portfolio data to localStorage", error);
+    const updateFirestore = useCallback((data: Partial<PortfolioData>) => {
+        if (docRef) {
+            setDoc(docRef, data, { merge: true }).catch(error => {
+                console.error("Failed to save data to Firestore:", error);
+            });
         }
-    }, [portfolioData]);
+    }, [docRef]);
+
 
     const setPersonalInfo = useCallback((info: typeof defaultPersonalInfo) => {
         setPortfolioData(prev => ({ ...prev, personalInfo: info }));
-    }, []);
+        updateFirestore({ personalInfo: info });
+    }, [updateFirestore]);
 
-    const resetPersonalInfo = useCallback(() => {
-        setPortfolioData(prev => ({...prev, personalInfo: defaultPersonalInfo }));
-    }, []);
 
     const setProjects = useCallback((projects: Project[]) => {
         setPortfolioData(prev => ({ ...prev, projects }));
-    }, []);
+        updateFirestore({ projects });
+    }, [updateFirestore]);
 
     const setExperience = useCallback((experience: Experience[]) => {
         setPortfolioData(prev => ({ ...prev, experience }));
-    }, []);
+        updateFirestore({ experience });
+    }, [updateFirestore]);
 
     const setSkills = useCallback((skills: SkillCategory[]) => {
         setPortfolioData(prev => ({ ...prev, skills }));
-    }, []);
+        updateFirestore({ skills });
+    }, [updateFirestore]);
 
 
     const value = useMemo(() => ({
         personalInfo: portfolioData.personalInfo,
         setPersonalInfo,
-        resetPersonalInfo,
         projects: portfolioData.projects,
         setProjects,
         experience: portfolioData.experience,
         setExperience,
         skills: portfolioData.skills,
         setSkills,
-    }), [portfolioData, setPersonalInfo, resetPersonalInfo, setProjects, setExperience, setSkills]);
+        loading,
+    }), [portfolioData, setPersonalInfo, setProjects, setExperience, setSkills, loading]);
 
     return (
         <PortfolioDataContext.Provider value={value}>

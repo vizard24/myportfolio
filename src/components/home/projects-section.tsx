@@ -53,7 +53,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
     setIsEditing(false);
     toast({
       title: "Project Saved",
-      description: "Your changes have been saved locally.",
+      description: "Your changes have been saved.",
     });
   };
 
@@ -96,7 +96,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
     if (newTech && !editedProject.techStack.find(t => t.name.toLowerCase() === newTech.toLowerCase())) {
         setEditedProject(prev => ({
             ...prev,
-            techStack: [...prev.techStack, { name: newTech }]
+            techStack: [...prev.techStack, { name: newTech, iconName: 'Default' }]
         }));
         setNewTech("");
     }
@@ -222,8 +222,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
 
         <div className="flex flex-wrap gap-2 my-4">
           {currentProject.techStack.map((tech) => {
-            const iconKey = Object.keys(techIcons).find(key => techIcons[key as keyof typeof techIcons].displayName === (tech.icon as any)?.displayName);
-            const Icon = iconKey ? techIcons[iconKey as keyof typeof techIcons] : null;
+            const Icon = tech.iconName ? techIcons[tech.iconName] : null;
             return (
                 <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
                   {Icon && <Icon className="h-3 w-3" />}

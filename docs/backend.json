@@ -1,6 +1,133 @@
 
 {
   "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores all portfolio content for a single user, including personal info, projects, experience, skills, and networking contacts.",
+      "type": "object",
+      "properties": {
+        "personalInfo": { "$ref": "#/entities/PersonalInfo" },
+        "projects": { "type": "array", "items": { "$ref": "#/entities/Project" } },
+        "experience": { "type": "array", "items": { "$ref": "#/entities/Experience" } },
+        "skills": { "type": "array", "items": { "$ref": "#/entities/SkillCategory" } },
+        "networkingContacts": { "type": "array", "items": { "$ref": "#/entities/NetworkingContact" } }
+      }
+    },
+    "PersonalInfo": {
+        "title": "Personal Info",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "title": { "type": "string" },
+            "introduction": { "type": "string" },
+            "profilePictureUrl": { "type": "string" },
+            "profilePictureHint": { "type": "string" },
+            "contact": { "$ref": "#/entities/ContactInfo" },
+            "resumeSummaries": { "type": "array", "items": { "$ref": "#/entities/ResumeSummary" } }
+        }
+    },
+    "ContactInfo": {
+        "title": "Contact Info",
+        "type": "object",
+        "properties": {
+            "email": { "$ref": "#/entities/ContactLink" },
+            "linkedin": { "$ref": "#/entities/ContactLink" },
+            "github": { "$ref": "#/entities/ContactLink" },
+            "twitter": { "$ref": "#/entities/ContactLink" },
+            "instagram": { "$ref": "#/entities/ContactLink" },
+            "substack": { "$ref": "#/entities/ContactLink" },
+            "medium": { "$ref": "#/entities/ContactLink" },
+            "discord": { "$ref": "#/entities/ContactLink" }
+        }
+    },
+    "ContactLink": {
+        "title": "Contact Link",
+        "type": "object",
+        "properties": {
+            "url": { "type": "string" },
+            "visible": { "type": "boolean" }
+        }
+    },
+    "ResumeSummary": {
+        "title": "Resume Summary",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "content": { "type": "string" }
+        }
+    },
+    "Project": {
+        "title": "Project",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "imageUrl": { "type": "string" },
+            "imageHint": { "type": "string" },
+            "techStack": { "type": "array", "items": { "$ref": "#/entities/Tech" } },
+            "githubUrl": { "type": "string" },
+            "liveDemoUrl": { "type": "string" },
+            "caseStudyUrl": { "type": "string" },
+            "videoDemoUrl": { "type": "string" },
+            "apiDocsUrl": { "type": "string" },
+            "designFilesUrl": { "type": "string" }
+        }
+    },
+    "Tech": {
+        "title": "Tech",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" }
+        }
+    },
+    "Experience": {
+        "title": "Experience",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "type": { "type": "string", "enum": ["work", "education"] },
+            "title": { "type": "string" },
+            "institution": { "type": "string" },
+            "dateRange": { "type": "string" },
+            "description": { "type": "array", "items": { "type": "string" } },
+            "iconName": { "type": "string" }
+        }
+    },
+    "SkillCategory": {
+        "title": "Skill Category",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "skills": { "type": "array", "items": { "$ref": "#/entities/Skill" } }
+        }
+    },
+    "Skill": {
+        "title": "Skill",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "level": { "type": "number" },
+            "iconName": { "type": "string" }
+        }
+    },
+    "NetworkingContact": {
+        "title": "Networking Contact",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "linkedinUrl": { "type": "string" },
+            "companies": { "type": "string" },
+            "positions": { "type": "string" },
+            "certifications": { "type": "string" },
+            "college": { "type": "string" },
+            "status": { "type": "string", "enum": ["Not Contacted", "Contacted", "In Progress", "Follow-up Needed", "Closed"] }
+        }
+    },
     "JobApplication": {
       "title": "Job Application",
       "description": "Represents a user's tailored application for a specific job.",
@@ -61,11 +188,13 @@
     "providers": ["google.com"]
   },
   "firestore": {
+    "/users/{userId}": {
+        "schema": { "$ref": "#/entities/UserProfile" },
+        "description": "Stores all portfolio content for a user."
+    },
     "/users/{userId}/applications/{applicationId}": {
       "schema": { "$ref": "#/entities/JobApplication" },
       "description": "Stores individual job applications for a user."
     }
   }
 }
-
-    
