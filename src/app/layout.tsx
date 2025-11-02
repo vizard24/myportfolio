@@ -8,6 +8,7 @@ import { AuthProvider } from '@/context/auth-context';
 import { AdminModeProvider } from '@/context/admin-mode-context';
 import { MessageProvider } from '@/context/message-context';
 import { PortfolioDataProvider } from '@/context/portfolio-data-context';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -42,6 +43,7 @@ export default function RootLayout({
               </PortfolioDataProvider>
             </MessageProvider>
           </AdminModeProvider>
+          <FirebaseErrorListener />
         </AuthProvider>
         <Toaster />
       </body>

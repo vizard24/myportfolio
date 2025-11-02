@@ -7,6 +7,9 @@ import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { personalInfo as defaultPersonalInfo, projectsData as defaultProjectsData, experienceData as defaultExperienceData, skillsData as defaultSkillsData } from '@/data/portfolio-data';
 import type { Project, Experience, SkillCategory } from '@/data/portfolio-data';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+
 
 // Define the shape of your portfolio data
 interface PortfolioData {
@@ -92,8 +95,15 @@ export function PortfolioDataProvider({ children }: { children: React.ReactNode 
     
     const updateFirestore = useCallback((data: Partial<PortfolioData>) => {
         if (docRef) {
-            setDoc(docRef, data, { merge: true }).catch(error => {
-                console.error("Failed to save data to Firestore:", error);
+            setDoc(docRef, data, { merge: true })
+            .catch(async (serverError) => {
+              const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: data,
+              } satisfies SecurityRuleContext);
+      
+              errorEmitter.emit('permission-error', permissionError);
             });
         }
     }, [docRef]);
