@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useId, useEffect } from 'react';
@@ -12,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,8 @@ import {
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 
 type Language = 'French' | 'English';
@@ -69,6 +72,52 @@ interface SavedApplication {
 }
 
 function ApplicationDetailDialog({ application }: { application: SavedApplication }) {
+    const { toast } = useToast();
+
+    const handleDownloadPdf = async (content: string, fileName: string) => {
+        toast({ title: 'Generating PDF...', description: 'Please wait a moment.' });
+        try {
+            const doc = new jsPDF({
+                orientation: 'p',
+                unit: 'px',
+                format: 'a4',
+            });
+
+            // A4 dimensions in pixels at 72 DPI are roughly 595x842.
+            const a4Width = 595;
+            const a4Height = 842;
+            const margin = 40;
+            const maxLineWidth = a4Width - margin * 2;
+            
+            // Set font styles
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(40, 40, 40);
+
+            // Split the text into lines that fit the page width
+            const lines = doc.splitTextToSize(content, maxLineWidth);
+
+            let cursorY = margin;
+
+            // Add lines to the PDF, handling page breaks
+            lines.forEach((line: string) => {
+                if (cursorY + 15 > a4Height - margin) {
+                    doc.addPage();
+                    cursorY = margin;
+                }
+                doc.text(line, margin, cursorY);
+                cursorY += 15; // Line height
+            });
+
+
+            doc.save(`${fileName}.pdf`);
+            toast({ title: 'Download Complete', description: `${fileName}.pdf has been saved.` });
+        } catch (error) {
+            console.error("Failed to generate PDF", error);
+            toast({ title: 'PDF Generation Failed', variant: 'destructive' });
+        }
+    };
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -78,19 +127,41 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
                 <DialogHeader>
                     <DialogTitle>{application.jobTitle}</DialogTitle>
                 </DialogHeader>
-                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden py-4">
-                    <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold text-primary">Tailored Resume</h3>
-                        <ScrollArea className="flex-grow border rounded-md p-4 bg-background">
-                           <pre className="text-sm font-mono whitespace-pre-wrap">{application.tailoredResume}</pre>
-                        </ScrollArea>
-                    </div>
-                     <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold text-primary">Cover Letter</h3>
-                        <ScrollArea className="flex-grow border rounded-md p-4 bg-background">
-                            <pre className="text-sm font-mono whitespace-pre-wrap">{application.coverLetter}</pre>
-                        </ScrollArea>
-                    </div>
+                <div className="flex-grow space-y-6 overflow-y-auto py-4 pr-6">
+                    <Accordion type="single" collapsible defaultValue="resume">
+                        <AccordionItem value="resume">
+                            <AccordionTrigger>
+                                <div className="flex justify-between items-center w-full pr-2">
+                                    <h3 className="text-lg font-semibold text-primary">Tailored Resume</h3>
+                                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleDownloadPdf(application.tailoredResume, `${application.jobTitle}-Resume`); }}>
+                                        <Download className="mr-2 h-4 w-4"/>
+                                        Download PDF
+                                    </Button>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <ScrollArea className="h-64 border rounded-md p-4 bg-background">
+                                   <pre className="text-sm font-mono whitespace-pre-wrap">{application.tailoredResume}</pre>
+                                </ScrollArea>
+                            </AccordionContent>
+                        </AccordionItem>
+                         <AccordionItem value="cover-letter">
+                            <AccordionTrigger>
+                                <div className="flex justify-between items-center w-full pr-2">
+                                     <h3 className="text-lg font-semibold text-primary">Cover Letter</h3>
+                                     <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleDownloadPdf(application.coverLetter, `${application.jobTitle}-CoverLetter`); }}>
+                                        <Download className="mr-2 h-4 w-4"/>
+                                        Download PDF
+                                    </Button>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <ScrollArea className="h-64 border rounded-md p-4 bg-background">
+                                    <pre className="text-sm font-mono whitespace-pre-wrap">{application.coverLetter}</pre>
+                                </ScrollArea>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
                 </div>
                  <div className="flex-shrink-0 pt-4 border-t">
                      <Card>
@@ -392,7 +463,7 @@ function ApplicationTrackerPage() {
                                 <TableHead>Match Score</TableHead>
                                 <TableHead>Language</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead className="w-[100px] text-right"></TableHead>
+                                <TableHead className="w-0 p-0 text-right"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
