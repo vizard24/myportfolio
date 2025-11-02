@@ -392,7 +392,7 @@ function ApplicationTrackerPage() {
                                 <TableHead>Match Score</TableHead>
                                 <TableHead>Language</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead className="w-0"></TableHead>
+                                <TableHead className="w-[100px] text-right"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -411,8 +411,8 @@ function ApplicationTrackerPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>{item.createdAt ? format(new Date((item.createdAt as any).seconds * 1000), 'MMM d, yyyy') : 'N/A'}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-2">
+                                    <TableCell className="p-2 text-right">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-1">
                                             <ApplicationDetailDialog application={item} />
                                             {item.applicationLink && (
                                                 <Button variant="ghost" size="sm" asChild>
