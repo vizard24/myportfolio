@@ -71,6 +71,41 @@ interface SavedApplication {
     createdAt: { seconds: number; nanoseconds: number; } | Date;
 }
 
+function DocumentDisplayDialog({ title, content, onDownload }: { title: string; content: string; onDownload: () => void; }) {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full h-full text-left p-0">
+                    <Card className="w-full h-full hover:bg-muted/50 transition-colors flex flex-col">
+                        <CardHeader className="flex-row items-center justify-between">
+                            <CardTitle className="text-lg">{title}</CardTitle>
+                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); onDownload(); }}>
+                                <Download className="mr-2 h-4 w-4" /> PDF
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="flex-grow overflow-hidden">
+                             <ScrollArea className="h-48">
+                                <pre className="text-xs font-mono whitespace-pre-wrap">{content}</pre>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                </DialogHeader>
+                <div className="flex-grow overflow-hidden">
+                    <ScrollArea className="h-full pr-4">
+                        <pre className="text-sm font-mono whitespace-pre-wrap">{content}</pre>
+                    </ScrollArea>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+
 function ApplicationDetailDialog({ application }: { application: SavedApplication }) {
     const { toast } = useToast();
 
@@ -83,23 +118,19 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
                 format: 'a4',
             });
 
-            // A4 dimensions in pixels at 72 DPI are roughly 595x842.
             const a4Width = 595;
             const a4Height = 842;
             const margin = 40;
             const maxLineWidth = a4Width - margin * 2;
             
-            // Set font styles
             doc.setFont('Helvetica', 'normal');
             doc.setFontSize(12);
             doc.setTextColor(40, 40, 40);
 
-            // Split the text into lines that fit the page width
             const lines = doc.splitTextToSize(content, maxLineWidth);
 
             let cursorY = margin;
 
-            // Add lines to the PDF, handling page breaks
             lines.forEach((line: string) => {
                 if (cursorY + 15 > a4Height - margin) {
                     doc.addPage();
@@ -125,45 +156,23 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
                     <FileText className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{application.jobTitle}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-grow space-y-6 overflow-y-auto py-4 pr-6">
-                    <Accordion type="single" collapsible defaultValue="resume">
-                        <AccordionItem value="resume">
-                            <AccordionTrigger>
-                                <div className="flex justify-between items-center w-full pr-2">
-                                    <h3 className="text-lg font-semibold text-primary">Tailored Resume</h3>
-                                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleDownloadPdf(application.tailoredResume, `${application.jobTitle}-Resume`); }}>
-                                        <Download className="mr-2 h-4 w-4"/>
-                                        Download PDF
-                                    </Button>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <ScrollArea className="h-64 border rounded-md p-4 bg-background">
-                                   <pre className="text-sm font-mono whitespace-pre-wrap">{application.tailoredResume}</pre>
-                                </ScrollArea>
-                            </AccordionContent>
-                        </AccordionItem>
-                         <AccordionItem value="cover-letter">
-                            <AccordionTrigger>
-                                <div className="flex justify-between items-center w-full pr-2">
-                                     <h3 className="text-lg font-semibold text-primary">Cover Letter</h3>
-                                     <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleDownloadPdf(application.coverLetter, `${application.jobTitle}-CoverLetter`); }}>
-                                        <Download className="mr-2 h-4 w-4"/>
-                                        Download PDF
-                                    </Button>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <ScrollArea className="h-64 border rounded-md p-4 bg-background">
-                                    <pre className="text-sm font-mono whitespace-pre-wrap">{application.coverLetter}</pre>
-                                </ScrollArea>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <DocumentDisplayDialog
+                            title="Tailored Resume"
+                            content={application.tailoredResume}
+                            onDownload={() => handleDownloadPdf(application.tailoredResume, `${application.jobTitle}-Resume`)}
+                        />
+                        <DocumentDisplayDialog
+                            title="Cover Letter"
+                            content={application.coverLetter}
+                            onDownload={() => handleDownloadPdf(application.coverLetter, `${application.jobTitle}-CoverLetter`)}
+                        />
+                    </div>
                 </div>
                  <div className="flex-shrink-0 pt-4 border-t">
                      <Card>
@@ -553,3 +562,5 @@ export default function ApplicationTrackerPageWrapper() {
   
   return <ApplicationTrackerPage />;
 }
+
+    
