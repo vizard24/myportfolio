@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Loader, PlusCircle, Trash2, Wand2, Star, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download, BrainCircuit, BookUser } from 'lucide-react';
+import { Loader, PlusCircle, Trash2, Wand2, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download, BrainCircuit, BookUser } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -239,6 +239,21 @@ function ApplicationTrackerPage() {
   const handleResumeContentChange = (id: string, newContent: string) => {
     setBaseResumes(prev => prev.map(r => r.id === id ? { ...r, content: newContent } : r));
   };
+  
+  const addBaseResume = () => {
+    if (baseResumes.length < 3) {
+      const newResume = {
+        id: `resume-${Date.now()}`,
+        title: `Resume ${baseResumes.length + 1}`,
+        content: ''
+      };
+      setBaseResumes(prev => [...prev, newResume]);
+      toast({
+        title: "New Resume Added",
+        description: "A new base resume has been added.",
+      });
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -381,18 +396,25 @@ function ApplicationTrackerPage() {
             <CardTitle>Your Base Resumes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue={baseResumes[0]?.id || 'resume-1'}>
-              <TabsList>
-                {baseResumes.map(resume => (
-                  <TabsTrigger key={resume.id} value={resume.id}>
-                    <Input
-                      value={resume.title}
-                      onChange={(e) => handleResumeTitleChange(resume.id, e.target.value)}
-                      className="border-none focus-visible:ring-0 text-center bg-transparent"
-                    />
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            <Tabs defaultValue={baseResumes[0]?.id || 'resume-1'} className="w-full">
+                <div className="flex items-center gap-2">
+                    <TabsList>
+                        {baseResumes.map(resume => (
+                        <TabsTrigger key={resume.id} value={resume.id}>
+                            <Input
+                            value={resume.title}
+                            onChange={(e) => handleResumeTitleChange(resume.id, e.target.value)}
+                            className="border-none focus-visible:ring-0 text-center bg-transparent h-auto p-0"
+                            />
+                        </TabsTrigger>
+                        ))}
+                    </TabsList>
+                    {baseResumes.length < 3 && (
+                        <Button variant="ghost" size="icon" onClick={addBaseResume}>
+                            <PlusCircle className="h-5 w-5" />
+                        </Button>
+                    )}
+                </div>
               {baseResumes.map(resume => (
                 <TabsContent key={resume.id} value={resume.id} className="mt-4">
                   <Textarea
@@ -692,3 +714,5 @@ export default function ApplicationTrackerPageWrapper() {
   
   return <ApplicationTrackerPage />;
 }
+
+    
