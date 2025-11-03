@@ -1,7 +1,6 @@
 
 import type {Metadata} from 'next';
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { NetworkingDataProvider } from '@/context/networking-context';
@@ -10,6 +9,9 @@ import { AdminModeProvider } from '@/context/admin-mode-context';
 import { MessageProvider } from '@/context/message-context';
 import { PortfolioDataProvider } from '@/context/portfolio-data-context';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+
 
 export const metadata: Metadata = {
   title: 'Yaovi Portfolio',
@@ -23,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
           <AdminModeProvider>
             <MessageProvider>
