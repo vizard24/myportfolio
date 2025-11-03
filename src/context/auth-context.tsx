@@ -3,7 +3,7 @@
 
 import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,7 +12,7 @@ const ADMIN_EMAIL = "fgadedjro@gmail.com";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -63,11 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async () => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithEmailAndPassword(auth, email, password);
       const loggedInUser = result.user;
 
       if (loggedInUser.email === ADMIN_EMAIL) {
@@ -78,26 +77,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(loggedInUser);
         router.refresh();
       } else {
+        // This case is unlikely if rules are set up, but good for defense-in-depth
         toast({
           title: "Unauthorized Account",
-          description: "This account is not authorized for admin access. Please use the admin account.",
+          description: "This account is not authorized for admin access.",
           variant: "destructive",
         });
-        await signOut(auth); // Sign out the unauthorized user.
+        await signOut(auth);
         setUser(null);
+        throw new Error("Unauthorized");
       }
     } catch (error: any) {
-        // Don't show an error toast if the user simply closed the popup.
-        if (error.code === 'auth/popup-closed-by-user') {
-            console.log("Login cancelled by user.");
-        } else {
-            console.error("Error during Google login:", error);
-            toast({
-                title: "Login Failed",
-                description: "Something went wrong during login. Please try again.",
-                variant: "destructive",
-            });
+        console.error("Error during email/password login:", error);
+        let description = "Something went wrong during login. Please try again.";
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+            description = "Invalid email or password. Please check your credentials and try again.";
         }
+        toast({
+            title: "Login Failed",
+            description,
+            variant: "destructive",
+        });
+        throw error; // Re-throw to be caught by the component
     } finally {
       setLoading(false);
     }

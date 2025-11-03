@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAdminMode } from '@/context/admin-mode-context';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
+import { LoginDialog } from '@/components/admin/login-dialog';
 
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -100,10 +101,9 @@ export const SocialIcons = ({ contact, iconClassName }: { contact: any; iconClas
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const { personalInfo } = usePortfolioData();
-  const { toggleAdminMode } = useAdminMode();
-  const { user, loading } = useAuth();
+  const { isAdminMode, toggleAdminMode } = useAdminMode();
+  const { loading } = useAuth();
 
-  const isAdminMode = !!user;
 
   return (
     <footer className="border-t border-border/40 bg-background">
@@ -114,19 +114,19 @@ export default function Footer() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          <Button onClick={toggleAdminMode} variant={isAdminMode ? "secondary" : "ghost"} size="sm" disabled={loading}>
             {isAdminMode ? (
-              <>
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </>
+                 <Button onClick={toggleAdminMode} variant="secondary" size="sm" disabled={loading}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                 </Button>
             ) : (
-              <>
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </>
+                <LoginDialog>
+                    <Button variant="ghost" size="sm" disabled={loading}>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                    </Button>
+                </LoginDialog>
             )}
-          </Button>
           <SocialIcons contact={personalInfo.contact} />
         </div>
       </div>
