@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react';
-import { usePortfolioData } from './portfolio-data-context';
+import { useSimplePortfolio } from './simple-portfolio-context';
 
 export type ContactStatus = 'Not Contacted' | 'Contacted' | 'In Progress' | 'Follow-up Needed' | 'Closed';
 
@@ -29,7 +29,9 @@ const NetworkingDataContext = createContext<NetworkingDataContextType | undefine
 
 
 export function NetworkingDataProvider({ children }: { children: React.ReactNode }) {
-    const { networkingContacts, setNetworkingContacts } = usePortfolioData();
+    // Note: Networking contacts are not part of the simple structure yet
+    // For now, we'll use local state
+    const [networkingContacts, setNetworkingContacts] = useState<NetworkingContact[]>([]);
     
     const setContacts = (newContacts: NetworkingContact[]) => {
         setNetworkingContacts(newContacts);

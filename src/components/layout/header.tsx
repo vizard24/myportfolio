@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
 ];
 
 const adminNavItems = [
+    { name: 'Admin Dashboard', href: '/admin' },
     { name: 'Networking', href: '/#networking' },
     { name: 'App Tracker', href: '/application-tracker' }
 ]
@@ -45,6 +47,9 @@ export default function Header() {
             </Link>
           ))}
         </nav>
+        <div className="flex items-center space-x-2">
+          <ThemeToggle />
+        </div>
         <div className="flex flex-1 items-center justify-end space-x-2 md:hidden">
           <Sheet>
             <SheetTrigger asChild>

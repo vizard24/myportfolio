@@ -6,7 +6,8 @@ import { NetworkingDataProvider } from '@/context/networking-context';
 import { AuthProvider } from '@/context/auth-context';
 import { AdminModeProvider } from '@/context/admin-mode-context';
 import { MessageProvider } from '@/context/message-context';
-import { PortfolioDataProvider } from '@/context/portfolio-data-context';
+import { SimplePortfolioProvider } from '@/context/simple-portfolio-context';
+import { ThemeProvider } from '@/context/theme-context';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
@@ -22,19 +23,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <AuthProvider>
-          <AdminModeProvider>
-            <MessageProvider>
-              <PortfolioDataProvider>
-                <NetworkingDataProvider>
-                  {children}
-                </NetworkingDataProvider>
-              </PortfolioDataProvider>
-            </MessageProvider>
-          </AdminModeProvider>
-          <FirebaseErrorListener />
-        </AuthProvider>
-        <Toaster />
+        <ThemeProvider>
+          <AuthProvider>
+            <AdminModeProvider>
+              <MessageProvider>
+                <SimplePortfolioProvider>
+                  <NetworkingDataProvider>
+                    {children}
+                  </NetworkingDataProvider>
+                </SimplePortfolioProvider>
+              </MessageProvider>
+            </AdminModeProvider>
+            <FirebaseErrorListener />
+          </AuthProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

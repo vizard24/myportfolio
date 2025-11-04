@@ -4,7 +4,7 @@
 import { useState, useId, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
-import { usePortfolioData } from '@/context/portfolio-data-context';
+import { useSimplePortfolio } from '@/context/simple-portfolio-context';
 import { tailorResumeAndCoverLetter } from '@/ai/flows/resume-flow';
 import { analyzeSkillsFromJobs } from '@/ai/flows/skills-analysis-flow';
 import type { SkillAnalysis } from '@/ai/schemas/skills-analysis-schema';
@@ -13,9 +13,9 @@ import Footer from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Loader, PlusCircle, Trash2, Wand2, ShieldOff, CheckCircle, FileText, Languages, Briefcase, Link as LinkIcon, ExternalLink, Download, BrainCircuit, BookUser } from 'lucide-react';
+import { Loader, PlusCircle, Trash2, Wand2, ShieldOff, CheckCircle, FileText, Languages, Briefcase, ExternalLink, Download, BrainCircuit, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -38,13 +38,404 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, UnderlineType, BorderStyle } from 'docx';
+import { saveAs } from 'file-saver';
+import { formatDocument, type FormattedDocument } from '@/ai/flows/document-formatter-flow';
+import { EnhancedDocumentDisplay } from '@/components/ui/enhanced-document-display';
+
+// AI-Enhanced Word Document Generator
+async function createAIEnhancedWordDocument(formattedDoc: FormattedDocument, documentType: 'resume' | 'cover-letter'): Promise<Document> {
+  const paragraphs: Paragraph[] = [];
+
+  // Add name as header if available
+  if (formattedDoc.name) {
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: formattedDoc.name,
+            bold: true,
+            size: 36,
+            color: "1a365d",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      })
+    );
+  }
+
+  // Add contact information
+  if (formattedDoc.contact) {
+    const contactInfo = [];
+    if (formattedDoc.contact.email) contactInfo.push(formattedDoc.contact.email);
+    if (formattedDoc.contact.phone) contactInfo.push(formattedDoc.contact.phone);
+    if (formattedDoc.contact.location) contactInfo.push(formattedDoc.contact.location);
+    if (formattedDoc.contact.linkedin) contactInfo.push(formattedDoc.contact.linkedin);
+
+    if (contactInfo.length > 0) {
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: contactInfo.join(' | '),
+              size: 20,
+              color: "4a5568",
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        })
+      );
+    }
+  }
+
+  // Add sections
+  for (const section of formattedDoc.sections) {
+    // Section header
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: section.title.toUpperCase(),
+            bold: true,
+            size: 24,
+            color: "2d3748",
+            underline: {
+              type: UnderlineType.SINGLE,
+              color: "4299e1",
+            },
+          }),
+        ],
+        spacing: { before: 400, after: 200 },
+      })
+    );
+
+    // Section content
+    for (const item of section.content) {
+      let textRun: TextRun;
+      
+      switch (item.type) {
+        case 'job-title':
+          textRun = new TextRun({
+            text: item.text,
+            bold: true,
+            size: 22,
+            color: "2d3748",
+          });
+          break;
+        case 'company':
+          textRun = new TextRun({
+            text: item.text,
+            italics: true,
+            size: 20,
+            color: "4a5568",
+          });
+          break;
+        case 'date':
+          textRun = new TextRun({
+            text: item.text,
+            size: 18,
+            color: "718096",
+          });
+          break;
+        case 'bullet':
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `• ${item.text}`,
+                  size: 20,
+                  color: "2d3748",
+                }),
+              ],
+              indent: { left: 400 },
+              spacing: { after: 100 },
+            })
+          );
+          continue;
+        case 'skill-category':
+          textRun = new TextRun({
+            text: item.text,
+            bold: true,
+            size: 20,
+            color: "2d3748",
+          });
+          break;
+        default:
+          textRun = new TextRun({
+            text: item.text,
+            size: 20,
+            color: "2d3748",
+            bold: item.emphasis === 'bold',
+            italics: item.emphasis === 'italic',
+          });
+      }
+
+      paragraphs.push(
+        new Paragraph({
+          children: [textRun],
+          spacing: { after: 150 },
+        })
+      );
+    }
+  }
+
+  return new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: {
+              top: 1440,
+              right: 1440,
+              bottom: 1440,
+              left: 1440,
+            },
+          },
+        },
+        children: paragraphs,
+      },
+    ],
+  });
+}
+
+// Fallback Professional Word Document Generator
+async function createProfessionalWordDocument(content: string, documentType: 'resume' | 'cover-letter'): Promise<Document> {
+  // Parse the content to extract structured information
+  const lines = content.split('\n').filter(line => line.trim());
+  const paragraphs: Paragraph[] = [];
+  
+  // Add document title
+  const title = documentType === 'resume' ? 'Professional Resume' : 'Cover Letter';
+  paragraphs.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: title,
+          bold: true,
+          size: 32,
+          color: "2E3440",
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 },
+    })
+  );
+
+  let currentSection = '';
+  let isFirstLine = true;
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+
+    // Detect if this is a section header (all caps, or ends with colon, or common resume sections)
+    const isHeader = /^[A-Z\s]+:?$/.test(trimmedLine) || 
+                    ['EXPERIENCE', 'EDUCATION', 'SKILLS', 'CONTACT', 'SUMMARY', 'OBJECTIVE'].some(section => 
+                      trimmedLine.toUpperCase().includes(section)
+                    ) ||
+                    trimmedLine.endsWith(':');
+
+    if (isHeader) {
+      // Add section header
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: trimmedLine.replace(':', ''),
+              bold: true,
+              size: 24,
+              color: "3B4252",
+              underline: {
+                type: UnderlineType.SINGLE,
+                color: "5E81AC",
+              },
+            }),
+          ],
+          spacing: { before: 300, after: 200 },
+        })
+      );
+      currentSection = trimmedLine;
+    } else if (trimmedLine.startsWith('•') || trimmedLine.startsWith('-') || trimmedLine.startsWith('*')) {
+      // Bullet point
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `• ${trimmedLine.substring(1).trim()}`,
+              size: 22,
+              color: "2E3440",
+            }),
+          ],
+          indent: { left: 400 },
+          spacing: { after: 100 },
+        })
+      );
+    } else if (isFirstLine && documentType === 'resume') {
+      // First line is likely the name - make it prominent
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: trimmedLine,
+              bold: true,
+              size: 28,
+              color: "2E3440",
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        })
+      );
+      isFirstLine = false;
+    } else {
+      // Regular paragraph
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: trimmedLine,
+              size: 22,
+              color: "2E3440",
+            }),
+          ],
+          spacing: { after: 150 },
+        })
+      );
+    }
+  }
+
+  // Create the document
+  return new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: {
+              top: 1440,    // 1 inch
+              right: 1440,  // 1 inch
+              bottom: 1440, // 1 inch
+              left: 1440,   // 1 inch
+            },
+          },
+        },
+        children: paragraphs,
+      },
+    ],
+  });
+}
+
+// Job Description Dialog Component
+function JobDescriptionDialog({ jobDescription, jobTitle }: { jobDescription: string; jobTitle: string }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <FileText className="h-4 w-4 mr-2" />
+          View Job Description
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle>Original Job Description</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Job posting used to generate the tailored resume and cover letter for: <strong>{jobTitle}</strong>
+          </p>
+        </DialogHeader>
+        <ScrollArea className="max-h-[60vh] w-full">
+          <div className="p-4 bg-muted/50 rounded-md border">
+            <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
+              {jobDescription}
+            </pre>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 
 type Language = 'French' | 'English';
+
+function SkillsAnalysisDisplay({ marketSkills }: { marketSkills: SkillAnalysis }) {
+    const [showAllTechnical, setShowAllTechnical] = useState(false);
+    const [showAllSoft, setShowAllSoft] = useState(false);
+
+    const displayedTechnicalSkills = showAllTechnical ? marketSkills.technicalSkills : marketSkills.technicalSkills.slice(0, 5);
+    const displayedSoftSkills = showAllSoft ? marketSkills.softSkills : marketSkills.softSkills.slice(0, 5);
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div>
+                <h3 className="font-semibold mb-3 text-primary">Technical Skills</h3>
+                <ul className="space-y-2 text-sm">
+                    {displayedTechnicalSkills.map(skill => (
+                        <li key={skill.skill} className="flex justify-between items-center">
+                            <span>{skill.skill}</span>
+                            <Badge variant="secondary">{skill.count} occurrence(s)</Badge>
+                        </li>
+                    ))}
+                </ul>
+                {marketSkills.technicalSkills.length > 5 && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAllTechnical(!showAllTechnical)}
+                        className="mt-3 text-xs text-muted-foreground hover:text-primary"
+                    >
+                        {showAllTechnical ? (
+                            <>
+                                <ChevronUp className="h-3 w-3 mr-1" />
+                                Show Less
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown className="h-3 w-3 mr-1" />
+                                Show All ({marketSkills.technicalSkills.length})
+                            </>
+                        )}
+                    </Button>
+                )}
+            </div>
+            <div>
+                <h3 className="font-semibold mb-3 text-primary">Soft Skills</h3>
+                <ul className="space-y-2 text-sm">
+                    {displayedSoftSkills.map(skill => (
+                        <li key={skill.skill} className="flex justify-between items-center">
+                            <span>{skill.skill}</span>
+                            <Badge variant="secondary">{skill.count} occurrence(s)</Badge>
+                        </li>
+                    ))}
+                </ul>
+                {marketSkills.softSkills.length > 5 && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAllSoft(!showAllSoft)}
+                        className="mt-3 text-xs text-muted-foreground hover:text-primary"
+                    >
+                        {showAllSoft ? (
+                            <>
+                                <ChevronUp className="h-3 w-3 mr-1" />
+                                Show Less
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown className="h-3 w-3 mr-1" />
+                                Show All ({marketSkills.softSkills.length})
+                            </>
+                        )}
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+}
 
 interface Application {
   id: string;
@@ -76,33 +467,49 @@ interface SavedApplication {
 }
 
 function DocumentDisplayDialog({ title, content, onDownload }: { title: string; content: string; onDownload: () => void; }) {
+    const documentType = title.toLowerCase().includes('resume') ? 'resume' : 'cover-letter';
+    
     return (
         <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="w-full h-full text-left p-0">
-                    <Card className="w-full h-full hover:bg-muted/50 transition-colors flex flex-col">
-                        <CardHeader className="flex-row items-center justify-between">
-                            <CardTitle className="text-lg">{title}</CardTitle>
-                            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); onDownload(); }}>
-                                <Download className="mr-2 h-4 w-4" /> PDF
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="flex-grow overflow-hidden">
-                             <div className="h-48 overflow-hidden relative">
-                                <pre className="text-xs font-mono whitespace-pre-wrap">{content}</pre>
-                                <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
+            <Card className="w-full h-full hover:bg-muted/50 transition-colors flex flex-col">
+                <CardHeader className="flex-row items-center justify-between">
+                    <CardTitle className="text-lg">{title}</CardTitle>
+                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); onDownload(); }}>
+                        <Download className="mr-2 h-4 w-4" /> AI-Enhanced DOCX
+                    </Button>
+                </CardHeader>
+                <CardContent className="flex-grow overflow-hidden">
+                    <DialogTrigger asChild>
+                        <div className="h-48 overflow-hidden relative cursor-pointer hover:bg-muted/30 rounded p-3 transition-colors border border-border/50 bg-white">
+                            <div className="scale-[0.6] origin-top-left transform -ml-2 -mt-2">
+                                <EnhancedDocumentDisplay 
+                                    content={content} 
+                                    documentType={documentType}
+                                    className="text-xs"
+                                />
                             </div>
-                        </CardContent>
-                    </Card>
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-gradient-to-br from-accent/90 to-background">
+                            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card via-card/80 to-transparent" />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/5 transition-opacity rounded">
+                                <span className="text-sm font-medium bg-background/95 px-4 py-2 rounded-lg shadow-lg border">
+                                    Click to view full document
+                                </span>
+                            </div>
+                        </div>
+                    </DialogTrigger>
+                </CardContent>
+            </Card>
+            <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
+                    <DialogTitle className="text-2xl font-semibold text-slate-800">{title}</DialogTitle>
                 </DialogHeader>
-                <div className="flex-grow overflow-hidden">
-                    <ScrollArea className="h-full pr-4">
-                        <pre className="text-sm font-mono whitespace-pre-wrap">{content}</pre>
+                <div className="flex-grow overflow-hidden bg-white rounded-lg border">
+                    <ScrollArea className="h-full">
+                        <div className="p-8">
+                            <EnhancedDocumentDisplay 
+                                content={content} 
+                                documentType={documentType}
+                            />
+                        </div>
                     </ScrollArea>
                 </div>
             </DialogContent>
@@ -114,43 +521,30 @@ function DocumentDisplayDialog({ title, content, onDownload }: { title: string; 
 function ApplicationDetailDialog({ application }: { application: SavedApplication }) {
     const { toast } = useToast();
 
-    const handleDownloadPdf = async (content: string, fileName: string) => {
-        toast({ title: 'Generating PDF...', description: 'Please wait a moment.' });
+    const handleDownloadWord = async (content: string, fileName: string, documentType: 'resume' | 'cover-letter') => {
+        toast({ title: 'Generating Word Document...', description: 'AI is enhancing the format...' });
         try {
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'px',
-                format: 'a4',
-            });
-
-            const a4Width = 595;
-            const a4Height = 842;
-            const margin = 40;
-            const maxLineWidth = a4Width - margin * 2;
+            // Use AI to format the document professionally
+            const formattedDoc = await formatDocument(content, documentType);
+            const doc = await createAIEnhancedWordDocument(formattedDoc, documentType);
             
-            doc.setFont('Helvetica', 'normal');
-            doc.setFontSize(12);
-            doc.setTextColor(40, 40, 40);
-
-            const lines = doc.splitTextToSize(content, maxLineWidth);
-
-            let cursorY = margin;
-
-            lines.forEach((line: string) => {
-                if (cursorY + 15 > a4Height - margin) {
-                    doc.addPage();
-                    cursorY = margin;
-                }
-                doc.text(line, margin, cursorY);
-                cursorY += 15; // Line height
-            });
-
-
-            doc.save(`${fileName}.pdf`);
-            toast({ title: 'Download Complete', description: `${fileName}.pdf has been saved.` });
+            // Generate and download the document
+            const blob = await Packer.toBlob(doc);
+            saveAs(blob, `${fileName}.docx`);
+            
+            toast({ title: 'Professional Document Downloaded!', description: `AI-enhanced ${fileName}.docx has been saved.` });
         } catch (error) {
-            console.error("Failed to generate PDF", error);
-            toast({ title: 'PDF Generation Failed', variant: 'destructive' });
+            console.error('AI-enhanced document generation failed, falling back to basic format:', error);
+            // Fallback to basic formatting
+            try {
+                const doc = await createProfessionalWordDocument(content, documentType);
+                const blob = await Packer.toBlob(doc);
+                saveAs(blob, `${fileName}.docx`);
+                toast({ title: 'Document Downloaded!', description: `${fileName}.docx has been saved.` });
+            } catch (fallbackError) {
+                console.error('Fallback document generation also failed:', fallbackError);
+                toast({ title: 'Download Failed', description: 'Could not generate Word document. Please try again.', variant: 'destructive' });
+            }
         }
     };
 
@@ -163,25 +557,41 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
             </DialogTrigger>
             <DialogContent className="max-w-5xl">
                 <DialogHeader>
-                    <DialogTitle>{application.jobTitle}</DialogTitle>
+                    <div className="flex items-center justify-between">
+                        <DialogTitle>{application.jobTitle}</DialogTitle>
+                        {application.jobDescription && (
+                            <JobDescriptionDialog 
+                                jobDescription={application.jobDescription} 
+                                jobTitle={application.jobTitle || 'Untitled Job'} 
+                            />
+                        )}
+                    </div>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <DocumentDisplayDialog
                             title="Tailored Resume"
                             content={application.tailoredResume}
-                            onDownload={() => handleDownloadPdf(application.tailoredResume, `${application.jobTitle}-Resume`)}
+                            onDownload={() => handleDownloadWord(application.tailoredResume, `${application.jobTitle}-Resume`, 'resume')}
                         />
                         <DocumentDisplayDialog
                             title="Cover Letter"
                             content={application.coverLetter}
-                            onDownload={() => handleDownloadPdf(application.coverLetter, `${application.jobTitle}-CoverLetter`)}
+                            onDownload={() => handleDownloadWord(application.coverLetter, `${application.jobTitle}-CoverLetter`, 'cover-letter')}
                         />
                     </div>
                 </div>
                  <div className="flex-shrink-0 pt-4 border-t">
                      <Card>
-                        <CardHeader><CardTitle className="text-lg">Fit Analysis</CardTitle></CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-lg">Fit Analysis</CardTitle>
+                            {application.jobDescription && (
+                                <JobDescriptionDialog 
+                                    jobDescription={application.jobDescription} 
+                                    jobTitle={application.jobTitle || 'Untitled Job'} 
+                                />
+                            )}
+                        </CardHeader>
                         <CardContent className="flex flex-col md:flex-row items-center gap-6">
                             <div className="flex flex-col items-center gap-2">
                                 <div className="relative h-24 w-24">
@@ -219,18 +629,66 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
 
 function ApplicationTrackerPage() {
   const { user } = useAuth();
-  const { personalInfo, setPersonalInfo } = usePortfolioData();
+  const { personalInfo, updatePersonalInfo, saving } = useSimplePortfolio();
   const { toast } = useToast();
-  const [baseResumes, setBaseResumes] = useState(personalInfo.resumeSummaries);
+  const [baseResumes, setBaseResumes] = useState(() => {
+    // Initialize with at least one resume
+    const resumes = personalInfo.resumeSummaries || [];
+    if (resumes.length === 0) {
+      return [{
+        id: 'resume-1',
+        title: 'Resume 1',
+        content: ''
+      }];
+    }
+    return resumes;
+  });
+  
+  // Update baseResumes when personalInfo changes (when data loads from Firebase)
+  useEffect(() => {
+    if (personalInfo.resumeSummaries && personalInfo.resumeSummaries.length > 0) {
+      console.log('📥 Updating baseResumes from personalInfo:', personalInfo.resumeSummaries);
+      setBaseResumes(personalInfo.resumeSummaries);
+    }
+  }, [personalInfo.resumeSummaries]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [history, setHistory] = useState<SavedApplication[]>([]);
   const [marketSkills, setMarketSkills] = useState<SkillAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const uniqueId = useId();
 
-  useEffect(() => {
-    setPersonalInfo({ ...personalInfo, resumeSummaries: baseResumes });
-  }, [baseResumes]);
+  // Save resumes to database
+  const saveResumes = async () => {
+    try {
+      console.log('💾 Saving resumes to database...', {
+        baseResumes,
+        personalInfoBefore: personalInfo,
+        user: user?.email
+      });
+      
+      // Create updated personal info with new resume summaries
+      const updatedPersonalInfo = {
+        ...personalInfo,
+        resumeSummaries: baseResumes
+      };
+      
+      console.log('📤 Updating personal info with resumes...', updatedPersonalInfo);
+      await updatePersonalInfo(updatedPersonalInfo);
+      
+      console.log('✅ Resumes saved successfully');
+      toast({
+        title: "Resumes Saved",
+        description: "Your base resumes have been saved successfully.",
+      });
+    } catch (error) {
+      console.error('❌ Failed to save resumes:', error);
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save resumes. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleResumeTitleChange = (id: string, newTitle: string) => {
     setBaseResumes(prev => prev.map(r => r.id === id ? { ...r, title: newTitle } : r));
@@ -427,6 +885,16 @@ function ApplicationTrackerPage() {
                 </TabsContent>
               ))}
             </Tabs>
+            <div className="flex justify-end pt-4 border-t">
+              <Button onClick={saveResumes} disabled={saving} className="flex items-center gap-2">
+                {saving ? (
+                  <Loader className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {saving ? 'Saving...' : 'Save Resumes'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -509,7 +977,12 @@ function ApplicationTrackerPage() {
                             <AccordionContent className="px-6 pt-2 pb-6 space-y-6">
                                 {typeof app.matchingScore === 'number' && (
                                     <Card>
-                                        <CardHeader><CardTitle className="text-lg">Fit Analysis</CardTitle></CardHeader>
+                                        <CardHeader className="flex flex-row items-center justify-between">
+                                            <CardTitle className="text-lg">Fit Analysis</CardTitle>
+                                            {app.jobDescription && (
+                                                <JobDescriptionDialog jobDescription={app.jobDescription} jobTitle={app.jobTitle || 'Untitled Job'} />
+                                            )}
+                                        </CardHeader>
                                         <CardContent className="flex flex-col md:flex-row items-center gap-6">
                                             <div className="flex flex-col items-center gap-2">
                                                 <div className="relative h-24 w-24">
@@ -657,30 +1130,7 @@ function ApplicationTrackerPage() {
                             <span>Analyzing job descriptions...</span>
                         </div>
                     ) : marketSkills ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                            <div>
-                                <h3 className="font-semibold mb-3 text-primary">Technical Skills</h3>
-                                <ul className="space-y-2 text-sm">
-                                    {marketSkills.technicalSkills.map(skill => (
-                                        <li key={skill.skill} className="flex justify-between items-center">
-                                            <span>{skill.skill}</span>
-                                            <Badge variant="secondary">{skill.count} occurrence(s)</Badge>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold mb-3 text-primary">Soft Skills</h3>
-                                 <ul className="space-y-2 text-sm">
-                                    {marketSkills.softSkills.map(skill => (
-                                        <li key={skill.skill} className="flex justify-between items-center">
-                                            <span>{skill.skill}</span>
-                                            <Badge variant="secondary">{skill.count} occurrence(s)</Badge>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
+                        <SkillsAnalysisDisplay marketSkills={marketSkills} />
                     ) : (
                         <p className="text-muted-foreground text-sm">
                             No skills data to display. Add job descriptions to start the analysis.

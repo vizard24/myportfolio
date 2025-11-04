@@ -30,6 +30,8 @@ function PageContent() {
 }
 
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <PageContent />

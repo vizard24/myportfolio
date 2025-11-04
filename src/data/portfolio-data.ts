@@ -114,177 +114,28 @@ export const techIcons: { [key: string]: LucideIcon } = {
 
 export const personalInfo: PersonalInfo = {
   name: "Yaovi Gadedjro",
-  title: "Innovative Full-Stack Developer",
-  introduction: "A passionate and results-driven Full-Stack Developer with a knack for creating seamless and engaging user experiences. Eager to leverage modern technologies to build impactful solutions.",
+  title: "Full-Stack Developer",
+  introduction: "Welcome to my portfolio. Please customize this introduction in admin mode.",
   contact: {
     email: { url: "fgadedjro@gmail.com", visible: true },
-    linkedin: { url: "https://www.linkedin.com/in/yaovigadedjro", visible: true },
-    github: { url: "https://www.github.com/vizard24", visible: true },
-    twitter: { url: "https://twitter.com/johndoe", visible: false },
-    instagram: { url: "https://instagram.com/johndoe", visible: false },
-    substack: { url: "https://johndoe.substack.com", visible: false },
-    medium: { url: "https://medium.com/@johndoe", visible: false },
-    discord: { url: "https://discord.com/users/johndoe", visible: false },
+    linkedin: { url: "", visible: false },
+    github: { url: "", visible: false },
+    twitter: { url: "", visible: false },
+    instagram: { url: "", visible: false },
+    substack: { url: "", visible: false },
+    medium: { url: "", visible: false },
+    discord: { url: "", visible: false },
   },
-  profilePictureUrl: "https://picsum.photos/300/300",
-  profilePictureHint: "professional portrait",
-  resumeSummaries: [
-    {
-        id: 'resume-1',
-        title: 'Full-Stack Developer',
-        content: `Versatile Full-Stack Developer with 5+ years of experience in designing, developing, and deploying scalable web applications. Proficient in JavaScript, Python, React, Node.js, and cloud platforms like AWS. Proven ability to lead projects, collaborate with cross-functional teams, and deliver high-quality software solutions. Strong problem-solving skills and a passion for learning new technologies. Key achievements include reducing server costs by 20% through optimization and leading the development of a new e-commerce platform that increased sales by 15%.`
-    },
-    {
-        id: 'resume-2',
-        title: 'Cybersecurity Analyst',
-        content: 'Dedicated Cybersecurity Analyst with a background in network security and threat intelligence. Skilled in vulnerability assessment, penetration testing, and incident response. Experienced with tools like Wireshark, Metasploit, and SIEM solutions. Holder of CompTIA Security+ certification. Committed to protecting organizational assets and ensuring data integrity. Successfully identified and remediated critical vulnerabilities, reducing attack surface by 40%.'
-    },
-    {
-        id: 'resume-3',
-        title: 'AI/ML Engineer',
-        content: 'Innovative AI/ML Engineer with experience in building and deploying machine learning models. Proficient in Python, TensorFlow, and PyTorch. Expertise in natural language processing (NLP), computer vision, and predictive analytics. Developed a recommendation engine that improved user engagement by 25%. Passionate about using AI to solve complex real-world problems.'
-    }
-  ],
+  profilePictureUrl: "",
+  profilePictureHint: "Add your professional photo",
+  resumeSummaries: [],
 };
 
-export const projectsData: Project[] = [
-  {
-    id: 'project-1',
-    title: 'Ecoleta - Recycling Locator',
-    description: 'A platform connecting waste collection points with people looking to recycle. Developed during Next Level Week by Rocketseat.',
-    imageUrl: 'https://picsum.photos/seed/proj1/600/400',
-    imageHint: 'nature app',
-    techStack: [
-      { name: 'React', iconName: 'React' },
-      { name: 'Node.js', iconName: 'NodeJS' },
-      { name: 'SQLite', iconName: 'SQL' },
-      { name: 'TypeScript', iconName: 'TypeScript' },
-    ],
-    githubUrl: 'https://github.com/vizard24/ecoleta',
-    liveDemoUrl: 'https://ecoleta.example.com',
-  },
-  {
-    id: 'project-2',
-    title: 'DevFinances - Personal Finance Tracker',
-    description: 'A simple application for tracking personal income and expenses. Helps users manage their finances effectively.',
-    imageUrl: 'https://picsum.photos/seed/proj2/600/400',
-    imageHint: 'finance app',
-    techStack: [
-      { name: 'HTML', iconName: 'Default' },
-      { name: 'CSS', iconName: 'TailwindCSS' },
-      { name: 'JavaScript', iconName: 'TypeScript' },
-    ],
-    githubUrl: 'https://github.com/vizard24/devfinances',
-  },
-  {
-    id: 'project-3',
-    title: 'AI Article Summarizer',
-    description: 'An AI-powered tool that summarizes long articles into concise points using natural language processing.',
-    imageUrl: 'https://picsum.photos/seed/proj3/600/400',
-    imageHint: 'ai technology',
-    techStack: [
-      { name: 'Python', iconName: 'Python' },
-      { name: 'Flask', iconName: 'Cloud' },
-      { name: 'NLP', iconName: 'ProblemSolving' },
-      { name: 'React', iconName: 'React' },
-    ],
-    liveDemoUrl: 'https://aisummarizer.example.com',
-  },
-];
+export const projectsData: Project[] = [];
 
-export const experienceData: Experience[] = [
-  {
-    id: 'exp-1',
-    type: 'work',
-    title: 'Senior Software Engineer',
-    institution: 'Tech Solutions Inc.',
-    dateRange: 'Jan 2021 - Present',
-    description: [
-      'Led a team of 5 developers in agile sprints to deliver new features for a SaaS product.',
-      'Architected and implemented microservices leading to a 30% improvement in scalability.',
-      'Mentored junior engineers and conducted code reviews.',
-    ],
-    iconName: 'Briefcase',
-  },
-  {
-    id: 'exp-2',
-    type: 'work',
-    title: 'Full-Stack Developer',
-    institution: 'Web Wizards LLC',
-    dateRange: 'Jun 2018 - Dec 2020',
-    description: [
-      'Developed and maintained client websites and web applications using React, Node.js, and PHP.',
-      'Collaborated with designers to create responsive and user-friendly interfaces.',
-      'Integrated third-party APIs for payment processing and social media.',
-    ],
-    iconName: 'Briefcase',
-  },
-  {
-    id: 'edu-1',
-    type: 'education',
-    title: 'B.S. in Computer Science',
-    institution: 'State University',
-    dateRange: 'Aug 2014 - May 2018',
-    description: ['Graduated with honors. Focus on software development and artificial intelligence. Capstone project: "Predictive Analytics for Retail".'],
-    iconName: 'GraduationCap',
-  },
-];
+export const experienceData: Experience[] = [];
 
-export const skillsData: SkillCategory[] = [
-  {
-    id: 'cat-frontend',
-    name: 'Frontend Development',
-    skills: [
-      { id: 'skill-react', name: 'React', level: 90, iconName: 'React' },
-      { id: 'skill-nextjs', name: 'Next.js', level: 85, iconName: 'NextJS' },
-      { id: 'skill-vue', name: 'Vue.js', level: 70, iconName: 'VueJS' },
-      { id: 'skill-ts', name: 'TypeScript', level: 90, iconName: 'TypeScript' },
-      { id: 'skill-tailwind', name: 'Tailwind CSS', level: 80, iconName: 'TailwindCSS' },
-    ],
-  },
-  {
-    id: 'cat-backend',
-    name: 'Backend Development',
-    skills: [
-      { id: 'skill-nodejs', name: 'Node.js', level: 90, iconName: 'NodeJS' },
-      { id: 'skill-express', name: 'Express.js', level: 85, iconName: 'ExpressJS' },
-      { id: 'skill-python', name: 'Python', level: 80, iconName: 'Python' },
-      { id: 'skill-django', name: 'Django', level: 75, iconName: 'Django' },
-    ],
-  },
-  {
-    id: 'cat-databases',
-    name: 'Databases',
-    skills: [
-      { id: 'skill-sql', name: 'SQL (PostgreSQL, MySQL)', level: 85, iconName: 'SQL' },
-      { id: 'skill-mongo', name: 'MongoDB', level: 75, iconName: 'MongoDB' },
-      { id: 'skill-redis', name: 'Redis', level: 70, iconName: 'Redis' },
-    ],
-  },
-  {
-    id: 'cat-devops',
-    name: 'DevOps & Cloud',
-    skills: [
-      { id: 'skill-docker', name: 'Docker', level: 80, iconName: 'Docker' },
-      { id: 'skill-k8s', name: 'Kubernetes', level: 65, iconName: 'Kubernetes' },
-      { id: 'skill-aws', name: 'AWS', level: 75, iconName: 'AWS' },
-      { id: 'skill-gcp', name: 'Google Cloud', level: 70, iconName: 'GCP' },
-      { id: 'skill-cicd', name: 'CI/CD (GitHub Actions)', level: 80, iconName: 'CICD' },
-    ],
-  },
-  {
-    id: 'cat-others',
-    name: 'Other Skills',
-    skills: [
-      { id: 'skill-git', name: 'Git & GitHub', level: 95, iconName: 'Git' },
-      { id: 'skill-testing', name: 'Testing (Jest, Cypress)', level: 80, iconName: 'Testing' },
-      { id: 'skill-agile', name: 'Agile Methodologies', level: 90, iconName: 'Agile' },
-      { id: 'skill-comms', name: 'Communication', level: 90, iconName: 'Communication' },
-      { id: 'skill-problem-solving', name: 'Problem Solving', level: 95, iconName: 'ProblemSolving' },
-      { id: 'skill-data-analysis', name: 'Data Analysis', level: 70, iconName: 'DataAnalysis' },
-    ],
-  },
-];
+export const skillsData: SkillCategory[] = [];
 
 
 export const networkingContactsData: NetworkingContact[] = [

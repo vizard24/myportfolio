@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin override - fgadedjro@gmail.com can access everything
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'fgadedjro@gmail.com';
+    }
+    
+    // User can access their own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users collection - each user has their own document tree
+    match /users/{userId} {
+      allow read, write: if isAdmin() || isOwner(userId);
+      
+      // User's data subcollection (personalInfo, skills)
+      match /data/{document} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      // User's projects subcollection
+      match /projects/{projectId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      // User's experience subcollection
+      match /experience/{experienceId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      // User's job applications subcollection
+      match /applications/{applicationId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+    }
+  }
+}

@@ -12,16 +12,15 @@ interface AdminModeContextType {
 const AdminModeContext = createContext<AdminModeContextType | undefined>(undefined);
 
 export function AdminModeProvider({ children }: { children: React.ReactNode }) {
-  const { user, login, logout, loading } = useAuth();
+  const { user, loginWithGoogle, logout, loading } = useAuth();
 
   const isAdminMode = !!user && !loading; 
 
   const toggleAdminMode = () => {
     if (isAdminMode) {
       logout();
-    } else {
-      login();
     }
+    // Login is handled by the LoginDialog component
   };
   
   const value = useMemo(() => ({ isAdminMode, toggleAdminMode }), [isAdminMode, toggleAdminMode]);

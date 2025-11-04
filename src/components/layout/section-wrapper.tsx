@@ -13,7 +13,7 @@ interface SectionWrapperProps extends HTMLAttributes<HTMLElement> {
   headerActions?: React.ReactNode;
 }
 
-export default function SectionWrapper({
+export function SectionWrapper({
   id,
   title,
   subtitle,

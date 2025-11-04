@@ -1,21 +1,53 @@
 
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    // Admin override - fgadedjro@gmail.com can access everything
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'fgadedjro@gmail.com';
     }
-
+    
+    // User can access their own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // PUBLIC PORTFOLIO - readable by everyone, writable by admin only
+    match /portfolio/{portfolioId} {
+      allow read: if true; // Anyone can read the portfolio
+      allow write: if isAdmin(); // Only admin can modify
+      
+      // Portfolio data subcollection (personalInfo, skills)
+      match /data/{document} {
+        allow read: if true; // Anyone can read
+        allow write: if isAdmin(); // Only admin can modify
+      }
+      
+      // Portfolio projects subcollection
+      match /projects/{projectId} {
+        allow read: if true; // Anyone can read
+        allow write: if isAdmin(); // Only admin can modify
+      }
+      
+      // Portfolio experience subcollection
+      match /experience/{experienceId} {
+        allow read: if true; // Anyone can read
+        allow write: if isAdmin(); // Only admin can modify
+      }
+    }
+    
+    // PRIVATE USER DATA - admin and user access only
     match /users/{userId} {
-      // Users can only read and write their own profile data
-      allow read, write: if isOwner(userId);
-
-      // Users can only manage their own applications
+      allow read, write: if isAdmin() || isOwner(userId);
+      
+      // User's private job applications
       match /applications/{applicationId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      // User's private settings
+      match /settings/{document} {
+        allow read, write: if isAdmin() || isOwner(userId);
       }
     }
   }

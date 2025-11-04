@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import SectionWrapper from '@/components/layout/section-wrapper';
+import { SectionWrapper } from '@/components/layout/section-wrapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

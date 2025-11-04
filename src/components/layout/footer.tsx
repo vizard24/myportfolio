@@ -1,7 +1,7 @@
 
 "use client";
 
-import { usePortfolioData } from '@/context/portfolio-data-context';
+import { useSimplePortfolio } from '@/context/simple-portfolio-context';
 import { Github, Linkedin, Mail, LogIn, LogOut, Instagram } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminMode } from '@/context/admin-mode-context';
@@ -100,7 +100,7 @@ export const SocialIcons = ({ contact, iconClassName }: { contact: any; iconClas
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const { personalInfo } = usePortfolioData();
+  const { personalInfo } = useSimplePortfolio();
   const { isAdminMode, toggleAdminMode } = useAdminMode();
   const { loading } = useAuth();
 

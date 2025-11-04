@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { techIcons, type SkillCategory, type Skill } from '@/data/portfolio-data';
-import SectionWrapper from '@/components/layout/section-wrapper';
+import { SectionWrapper } from '@/components/layout/section-wrapper';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Pencil, PlusCircle, Save, X, Trash2, Smile } from 'lucide-react';
-import { usePortfolioData } from '@/context/portfolio-data-context';
+import { useSimplePortfolio } from '@/context/simple-portfolio-context';
 import type { LucideIcon } from 'lucide-react';
 
 function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isEditing: boolean; onUpdate: (updatedSkill: Skill) => void; onDelete: (skillId: string) => void; }) {
@@ -54,7 +54,7 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
     <div className="mb-4 group">
        {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
-                <Select value={skill.iconName} onValueChange={handleIconChange}>
+                <Select value={skill.iconName?.toString() || ''} onValueChange={handleIconChange}>
                     <SelectTrigger className="w-12 h-8">
                          <SelectValue>
                             {Icon ? <Icon className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
@@ -232,27 +232,59 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
 export default function SkillsSection() {
     const { isAdminMode } = useAdminMode();
     const { toast } = useToast();
-    const { skills, setSkills } = usePortfolioData();
+    const { skills, updateSkills } = useSimplePortfolio();
 
-    const handleAddCategory = () => {
+    // Ensure skills is always an array
+    const safeSkills = Array.isArray(skills) ? skills : [];
+
+    const handleAddCategory = async () => {
         const newCategory: SkillCategory = {
             id: `cat-${Date.now()}`,
             name: 'New Category',
             skills: [],
         };
-        setSkills([...skills, newCategory]);
-        toast({
-            title: "Category Added",
-            description: "A new skill category has been created. Click the edit icon to start adding skills.",
-        });
+        
+        try {
+            await updateSkills([...safeSkills, newCategory]);
+            toast({
+                title: "Category Added",
+                description: "A new skill category has been created. Click the edit icon to start adding skills.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to add skill category. Please try again.",
+                variant: "destructive",
+            });
+        }
     };
 
-    const handleUpdateCategory = (updatedCategory: SkillCategory) => {
-        setSkills(skills.map(cat => cat.id === updatedCategory.id ? updatedCategory : cat));
+    const handleUpdateCategory = async (updatedCategory: SkillCategory) => {
+        try {
+            await updateSkills(safeSkills.map(cat => cat.id === updatedCategory.id ? updatedCategory : cat));
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update skill category. Please try again.",
+                variant: "destructive",
+            });
+        }
     };
 
-    const handleDeleteCategory = (categoryId: string) => {
-        setSkills(skills.filter(cat => cat.id !== categoryId));
+    const handleDeleteCategory = async (categoryId: string) => {
+        try {
+            await updateSkills(safeSkills.filter(cat => cat.id !== categoryId));
+            toast({
+                title: "Category Deleted",
+                description: "The skill category has been removed.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to delete skill category. Please try again.",
+                variant: "destructive",
+            });
+        }
     };
 
 
@@ -270,14 +302,31 @@ export default function SkillsSection() {
         }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {skills.map((category) => (
-          <SkillCategoryCard 
-            key={category.id} 
-            category={category}
-            onSave={handleUpdateCategory}
-            onDelete={handleDeleteCategory}
-          />
-        ))}
+        {safeSkills.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <div className="text-muted-foreground mb-4">
+              <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <h3 className="text-lg font-medium mb-2">No Skills Yet</h3>
+              <p className="text-sm">
+                {isAdminMode 
+                  ? "Click the 'Add Skill Category' button above to showcase your expertise." 
+                  : "Skills will appear here once they are added."
+                }
+              </p>
+            </div>
+          </div>
+        ) : (
+          safeSkills.map((category) => (
+            <SkillCategoryCard 
+              key={category.id} 
+              category={category}
+              onSave={handleUpdateCategory}
+              onDelete={handleDeleteCategory}
+            />
+          ))
+        )}
       </div>
     </SectionWrapper>
   );

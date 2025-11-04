@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import SectionWrapper from '@/components/layout/section-wrapper';
+import { SectionWrapper } from '@/components/layout/section-wrapper';
 import { useNetworkingData, type NetworkingContact, type ContactStatus } from '@/context/networking-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';

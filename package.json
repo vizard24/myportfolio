@@ -1,4 +1,3 @@
-
 {
   "name": "nextn",
   "version": "0.1.0",
@@ -10,7 +9,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:rules": "node scripts/deploy-firestore-rules.js",
+    "test:ai": "node scripts/test-ai-config.js",
+    "check:firestore": "node scripts/check-firestore-status.js",
+    "cleanup:logs": "node scripts/cleanup-activity-logs.js",
+    "fix:issues": "node scripts/fix-common-issues.js",
+    "test:persistence": "node scripts/test-data-persistence.js",
+    "diagnose:data": "node scripts/diagnose-default-data.js",
+    "clear:defaults": "node scripts/clear-default-data.js"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
@@ -40,7 +47,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.5.0",
+    "docx": "^9.5.1",
+    "dotenv": "^16.6.1",
+    "file-saver": "^2.0.5",
     "firebase": "^10.14.1",
     "genkit": "^1.8.0",
     "html2canvas": "^1.4.1",
@@ -59,10 +68,12 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/papaparse": "^5.3.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.21",
     "genkit-cli": "^1.8.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",

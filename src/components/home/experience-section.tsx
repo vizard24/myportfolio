@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Experience } from '@/data/portfolio-data';
 import { experienceIcons, experienceIconNames } from '@/data/portfolio-data';
-import SectionWrapper from '@/components/layout/section-wrapper';
+import { SectionWrapper } from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, GraduationCap, Pencil, PlusCircle, Save, Trash2, X, Smile } from 'lucide-react';
 import { useAdminMode } from '@/context/admin-mode-context';
@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { usePortfolioData } from '@/context/portfolio-data-context';
+import { useSimplePortfolio } from '@/context/simple-portfolio-context';
 
 
 const iconColorClasses: Record<string, string> = {
@@ -200,9 +200,12 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
 export default function ExperienceSection() {
     const { isAdminMode } = useAdminMode();
     const { toast } = useToast();
-    const { experience, setExperience } = usePortfolioData();
+    const { experience, updateExperience, addExperience, deleteExperience } = useSimplePortfolio();
 
-    const handleAddExperience = () => {
+    // Ensure experience is always an array
+    const safeExperience = Array.isArray(experience) ? experience : [];
+
+    const handleAddExperience = async () => {
        const newExperience: Experience = {
             id: `exp-${Date.now()}`,
             type: 'work',
@@ -212,19 +215,48 @@ export default function ExperienceSection() {
             description: ['Responsibility or achievement.'],
             iconName: 'Briefcase'
         };
-        setExperience([newExperience, ...experience]);
-        toast({
-            title: "Experience Added",
-            description: "A new experience card has been created. Click the edit icon to start adding details.",
-        });
+        
+        try {
+            await addExperience(newExperience);
+            toast({
+                title: "Experience Added",
+                description: "A new experience card has been created. Click the edit icon to start adding details.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to add experience. Please try again.",
+                variant: "destructive",
+            });
+        }
     }
 
-    const handleUpdateExperience = (updatedItem: Experience) => {
-        setExperience(experience.map(item => item.id === updatedItem.id ? updatedItem : item));
+    const handleUpdateExperience = async (updatedItem: Experience) => {
+        try {
+            await updateExperience(updatedItem);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update experience. Please try again.",
+                variant: "destructive",
+            });
+        }
     }
 
-    const handleDeleteExperience = (itemId: string) => {
-        setExperience(experience.filter(item => item.id !== itemId));
+    const handleDeleteExperience = async (itemId: string) => {
+        try {
+            await deleteExperience(itemId);
+            toast({
+                title: "Experience Deleted",
+                description: "The experience has been removed.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to delete experience. Please try again.",
+                variant: "destructive",
+            });
+        }
     }
 
   return (
@@ -246,9 +278,26 @@ export default function ExperienceSection() {
         <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border hidden md:block" aria-hidden="true"></div>
         
         <div className="space-y-12">
-          {experience.map((item) => (
-            <ExperienceItem key={item.id} item={item} onSave={handleUpdateExperience} onDelete={handleDeleteExperience} />
-          ))}
+          {safeExperience.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-muted-foreground mb-4">
+                <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                </svg>
+                <h3 className="text-lg font-medium mb-2">No Experience Yet</h3>
+                <p className="text-sm">
+                  {isAdminMode 
+                    ? "Click the 'Add Experience' button above to add your professional journey." 
+                    : "Experience will appear here once it is added."
+                  }
+                </p>
+              </div>
+            </div>
+          ) : (
+            safeExperience.map((item) => (
+              <ExperienceItem key={item.id} item={item} onSave={handleUpdateExperience} onDelete={handleDeleteExperience} />
+            ))
+          )}
         </div>
       </div>
     </SectionWrapper>

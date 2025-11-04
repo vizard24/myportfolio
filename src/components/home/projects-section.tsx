@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { type Project, techIcons } from '@/data/portfolio-data';
-import SectionWrapper from '@/components/layout/section-wrapper';
+import { SectionWrapper } from '@/components/layout/section-wrapper';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { usePortfolioData } from '@/context/portfolio-data-context';
+import { useSimplePortfolio } from '@/context/simple-portfolio-context';
 
 
 type LinkType = 'githubUrl' | 'liveDemoUrl' | 'caseStudyUrl' | 'videoDemoUrl' | 'apiDocsUrl' | 'designFilesUrl';
@@ -176,15 +176,28 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
          </div>
       )}
       <div className="relative w-full h-56">
-        <Image
-          src={currentProject.imageUrl}
-          alt={currentProject.title}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          style={{objectFit: "cover"}}
-          className="transition-transform duration-500 group-hover:scale-105"
-          data-ai-hint={currentProject.imageHint || "technology project"}
-        />
+        {currentProject.imageUrl ? (
+          <Image
+            src={currentProject.imageUrl}
+            alt={currentProject.title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{objectFit: "cover"}}
+            className="transition-transform duration-500 group-hover:scale-105"
+            data-ai-hint={currentProject.imageHint || "technology project"}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-gray-300 flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-xs text-gray-500">No image</p>
+            </div>
+          </div>
+        )}
         {isEditing && (
           <>
             <input
@@ -290,31 +303,63 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
 
 export default function ProjectsSection() {
     const { isAdminMode } = useAdminMode();
-    const { projects, setProjects } = usePortfolioData();
+    const { projects, updateProject, addProject, deleteProject } = useSimplePortfolio();
     const { toast } = useToast();
 
-    const handleAddProject = () => {
+    // Ensure projects is always an array
+    const safeProjects = Array.isArray(projects) ? projects : [];
+
+    const handleAddProject = async () => {
         const newProject: Project = {
             id: `project-${Date.now()}`,
             title: 'New Project',
             description: 'A brief description of your new project.',
-            imageUrl: 'https://picsum.photos/600/400',
+            imageUrl: '',
             imageHint: 'new project placeholder',
             techStack: [],
         };
-        setProjects([newProject, ...projects]);
-        toast({
-            title: "Project Added",
-            description: "A new project card has been created. Click the edit icon to start adding details.",
-        });
+        
+        try {
+            await addProject(newProject);
+            toast({
+                title: "Project Added",
+                description: "A new project card has been created. Click the edit icon to start adding details.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to add project. Please try again.",
+                variant: "destructive",
+            });
+        }
     }
 
-    const handleUpdateProject = (updatedProject: Project) => {
-        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+    const handleUpdateProject = async (updatedProject: Project) => {
+        try {
+            await updateProject(updatedProject);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update project. Please try again.",
+                variant: "destructive",
+            });
+        }
     }
 
-    const handleDeleteProject = (projectId: string) => {
-        setProjects(projects.filter(p => p.id !== projectId));
+    const handleDeleteProject = async (projectId: string) => {
+        try {
+            await deleteProject(projectId);
+            toast({
+                title: "Project Deleted",
+                description: "The project has been removed.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to delete project. Please try again.",
+                variant: "destructive",
+            });
+        }
     }
 
   return (
@@ -330,11 +375,28 @@ export default function ProjectsSection() {
         ) : null
       }
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} onSave={handleUpdateProject} onDelete={handleDeleteProject} />
-        ))}
-      </div>
+      {safeProjects.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-muted-foreground mb-4">
+            <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 className="text-lg font-medium mb-2">No Projects Yet</h3>
+            <p className="text-sm">
+              {isAdminMode 
+                ? "Click the 'Add Project' button above to showcase your work." 
+                : "Projects will appear here once they are added."
+              }
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {safeProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} onSave={handleUpdateProject} onDelete={handleDeleteProject} />
+          ))}
+        </div>
+      )}
     </SectionWrapper>
   );
 }
