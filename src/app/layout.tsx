@@ -13,6 +13,9 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 export const metadata: Metadata = {
   title: 'Yaovi Portfolio',
   description: 'A personal portfolio showcasing projects, experience, and skills, with an AI-powered resume pitch generator.',
+  icons: {
+    icon: '/YFL.png',
+  },
 };
 
 export default function RootLayout({
