@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 9002",
+    "dev": "next dev -p 3000",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
@@ -51,6 +51,8 @@
     "dotenv": "^16.6.1",
     "file-saver": "^2.0.5",
     "firebase": "^10.14.1",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.6.0",
     "genkit": "^1.8.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
