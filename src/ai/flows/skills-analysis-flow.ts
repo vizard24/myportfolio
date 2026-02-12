@@ -11,18 +11,30 @@ import { ai } from '@/ai/genkit';
 import { SkillsAnalysisInputSchema, SkillsAnalysisOutputSchema, type SkillsAnalysisInput, type SkillAnalysis } from '@/ai/schemas/skills-analysis-schema';
 
 const skillsAnalysisPrompt = ai.definePrompt({
-    name: 'skillsAnalysisPrompt',
-    input: { schema: SkillsAnalysisInputSchema },
-    output: { schema: SkillsAnalysisOutputSchema },
-    prompt: `You are an expert HR analyst and data scientist. Your task is to analyze a collection of job descriptions and identify the most frequently required skills.
+  name: 'skillsAnalysisPrompt',
+  input: { schema: SkillsAnalysisInputSchema },
+  output: { schema: SkillsAnalysisOutputSchema },
+  prompt: `You are an expert HR analyst and career coach. Your task is to analyze a collection of job descriptions and compare them against a candidate's resume to identify skill gaps and strengths.
 
 You must adhere to the following rules:
-1.  **Analyze All Descriptions:** Go through every job description provided in the 'jobDescriptions' array.
-2.  **Extract Skills:** For each job description, identify both technical skills (e.g., 'React', 'Python', 'SQL', 'AWS', 'Docker') and soft skills (e.g., 'Communication', 'Teamwork', 'Problem-solving', 'Leadership').
-3.  **Normalize and Aggregate:** Normalize the skill names to ensure consistency (e.g., "React.js" and "React" should both count as "React"). Aggregate the counts for each unique skill across all job descriptions.
-4.  **Rank by Frequency:** Order the lists of technical skills and soft skills from the most frequently mentioned to the least.
-5.  **Be Concise:** Only include skills that are explicitly or very strongly implicitly mentioned. Do not infer skills that are not there.
-6.  **Top 10 Limit:** Limit each list (technical and soft skills) to a maximum of the top 10 most frequent skills.
+1.  **Analyze Job Descriptions:** Go through every job description provided to identify required skills.
+2.  **Analyze Resume (Gap Analysis):** Check if the identified skills are present in the provided 'userResume'.
+    - Mark as **'present'** if the candidate clearly has this skill.
+    - Mark as **'missing'** if the candidate does not mention this skill or a strong synonym.
+3.  **Categorize Skills:** Assign each skill to one of the following categories:
+    - **Language**: Programming languages (e.g., JavaScript, Python, Java).
+    - **Framework**: Libraries and frameworks (e.g., React, Django, Spring Boot).
+    - **Tool**: Tools, platforms, and software (e.g., Docker, AWS, Git, Jira).
+    - **Soft Skill**: Interpersonal and non-technical skills (e.g., Communication, Leadership).
+    - **Other**: Concepts, methodologies, or anything else (e.g., Agile, CI/CD, System Design).
+4.  **Calculate Relevance Score:** Assign a score (0-100) based on how frequently the skill appears across job descriptions and its typical importance in the industry.
+5.  **Rank by Importance:** Order skills primarily by frequency/relevance.
+6.  **Top 15 Limit:** Limit each list (technical and soft skills) to the top 15 most important skills.
+
+Here is the candidate's resume:
+---
+{{userResume}}
+---
 
 Here is the collection of job descriptions to analyze:
 ---
@@ -32,7 +44,7 @@ Job Description {{index}}:
 ---
 {{/each}}
 
-Please provide the aggregated and ranked lists of technical and soft skills in the specified JSON format.
+Please provide the detailed analysis in the specified JSON format.
 `,
 });
 
@@ -44,12 +56,12 @@ const skillsAnalysisFlow = ai.defineFlow(
   },
   async (input) => {
     if (input.jobDescriptions.length === 0) {
-        return { technicalSkills: [], softSkills: [] };
+      return { technicalSkills: [], softSkills: [] };
     }
-    
+
     const { output } = await skillsAnalysisPrompt(input);
     if (!output) {
-        throw new Error("AI failed to generate a response for skills analysis.");
+      throw new Error("AI failed to generate a response for skills analysis.");
     }
     return output;
   }
@@ -57,5 +69,5 @@ const skillsAnalysisFlow = ai.defineFlow(
 
 
 export async function analyzeSkillsFromJobs(input: SkillsAnalysisInput): Promise<SkillAnalysis> {
-    return skillsAnalysisFlow(input);
+  return skillsAnalysisFlow(input);
 }

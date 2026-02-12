@@ -42,7 +42,7 @@ export default function IntroductionSection() {
     const { name, value } = e.target;
     setEditedInfo(prev => ({ ...prev, [name]: value }));
   };
-  
+
   const handleNestedInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const [parent, child] = name.split('.');
@@ -59,14 +59,14 @@ export default function IntroductionSection() {
 
   const toggleLinkVisibility = (linkKey: keyof typeof personalInfo.contact) => {
     setEditedInfo(prev => ({
-        ...prev,
-        contact: {
-            ...prev.contact,
-            [linkKey]: {
-                ...prev.contact[linkKey],
-                visible: !prev.contact[linkKey].visible,
-            },
+      ...prev,
+      contact: {
+        ...prev.contact,
+        [linkKey]: {
+          ...prev.contact[linkKey],
+          visible: !prev.contact[linkKey].visible,
         },
+      },
     }));
   };
 
@@ -103,65 +103,67 @@ export default function IntroductionSection() {
   }
 
   return (
-    <section id="home" className="py-12 sm:py-16 lg:py-24 bg-secondary/50 dark:bg-secondary/20">
+    <section id="home" className="py-12 sm:py-16 lg:py-24">
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 max-w-7xl">
         <div className="flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-16">
           <AnimatedSection animation="scale-up" delay={200}>
             <div className="flex justify-center lg:flex-shrink-0">
-              <div className="relative">
-                <Card className="w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-full overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl dark:shadow-2xl dark:shadow-primary/20">
-                  {personalInfo.profilePictureUrl ? (
-                    <Image
-                      src={personalInfo.profilePictureUrl}
-                      alt={personalInfo.name}
-                      width={288}
-                      height={288}
-                      priority
-                      className="object-cover w-full h-full"
-                      data-ai-hint={personalInfo.profilePictureHint}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <span className="text-6xl font-bold text-primary/60">
-                        {personalInfo.name.charAt(0)}
-                      </span>
-                    </div>
+              {(personalInfo.profilePictureVisible !== false || isAdminMode) && (
+                <div className={`relative ${!personalInfo.profilePictureVisible && isAdminMode ? 'opacity-50 grayscale' : ''}`}>
+                  <Card className="w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-[2rem] overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl dark:shadow-2xl dark:shadow-primary/20 border-4 border-background">
+                    {personalInfo.profilePictureUrl ? (
+                      <Image
+                        src={personalInfo.profilePictureUrl}
+                        alt={personalInfo.name}
+                        width={288}
+                        height={288}
+                        priority
+                        className="object-cover w-full h-full"
+                        data-ai-hint={personalInfo.profilePictureHint}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                        <span className="text-6xl font-bold text-primary/60">
+                          {personalInfo.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </Card>
+                  {isAdminMode && (
+                    <Button
+                      size="sm"
+                      className="absolute -bottom-2 -right-2 rounded-full shadow-lg"
+                      onClick={() => fileInputRef.current?.click()}
+                      aria-label="Edit profile picture"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   )}
-                </Card>
-                {isAdminMode && (
-                  <Button
-                    size="sm"
-                    className="absolute -bottom-2 -right-2 rounded-full shadow-lg"
-                    onClick={() => fileInputRef.current?.click()}
-                    aria-label="Edit profile picture"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      const file = e.target.files[0];
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setEditedInfo(prev => ({
-                          ...prev,
-                          profilePictureUrl: reader.result as string,
-                        }));
-                        toast({
-                          title: "Image Updated",
-                          description: "The profile picture has been updated. Save to confirm.",
-                        });
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  className="hidden"
-                />
-              </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setEditedInfo(prev => ({
+                            ...prev,
+                            profilePictureUrl: reader.result as string,
+                          }));
+                          toast({
+                            title: "Image Updated",
+                            description: "The profile picture has been updated. Save to confirm.",
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </div>
+              )}
             </div>
           </AnimatedSection>
 
@@ -204,7 +206,7 @@ export default function IntroductionSection() {
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
-                    <h1 className="text-4xl md:text-5xl font-bold text-primary">
+                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent pb-2">
                       {personalInfo.name}
                     </h1>
                     {isAdminMode && (

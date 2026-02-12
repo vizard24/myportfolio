@@ -26,8 +26,8 @@ const FormattedDocumentSchema = z.object({
 export type FormattedDocument = z.infer<typeof FormattedDocumentSchema>;
 
 export async function formatDocumentFlow(content: string, documentType: 'resume' | 'cover-letter'): Promise<FormattedDocument> {
-    const prompt = documentType === 'resume' 
-      ? `You are a professional resume formatter. Analyze the following resume content and structure it into a well-organized, professional format.
+  const prompt = documentType === 'resume'
+    ? `You are a professional resume formatter. Analyze the following resume content and structure it into a well-organized, professional format.
 
 INSTRUCTIONS:
 1. Extract the person's name (usually the first line or prominently displayed)
@@ -105,7 +105,7 @@ Resume Content:
 ${content}
 
 Return ONLY the JSON object, no additional text.`
-      : `You are a professional cover letter formatter. Analyze the following cover letter content and structure it into a well-organized, professional format.
+    : `You are a professional cover letter formatter. Analyze the following cover letter content and structure it into a well-organized, professional format.
 
 INSTRUCTIONS:
 1. Extract contact information if present at the top
@@ -155,34 +155,34 @@ ${content}
 
 Return ONLY the JSON object, no additional text.`;
 
-    const result = await ai.generate({
-      model: 'gemini-2.0-flash-exp',
-      prompt,
-      config: {
-        temperature: 0.3,
-        maxOutputTokens: 2000,
-      },
-    });
+  const result = await ai.generate({
+    model: 'googleai/gemini-2.5-flash',
+    prompt,
+    config: {
+      temperature: 0.3,
+      maxOutputTokens: 2000,
+    },
+  });
 
-    try {
-      const parsedResult = JSON.parse(result.text);
-      return FormattedDocumentSchema.parse(parsedResult);
-    } catch (error) {
-      console.error('Failed to parse AI formatting result:', error);
-      // Fallback: return basic structure
-      return {
-        sections: [
-          {
-            title: documentType === 'resume' ? 'Resume' : 'Cover Letter',
-            type: 'other' as const,
-            content: content.split('\n').filter((line: string) => line.trim()).map((line: string) => ({
-              type: 'paragraph' as const,
-              text: line.trim(),
-            })),
-          },
-        ],
-      };
-    }
+  try {
+    const parsedResult = JSON.parse(result.text);
+    return FormattedDocumentSchema.parse(parsedResult);
+  } catch (error) {
+    console.error('Failed to parse AI formatting result:', error);
+    // Fallback: return basic structure
+    return {
+      sections: [
+        {
+          title: documentType === 'resume' ? 'Resume' : 'Cover Letter',
+          type: 'other' as const,
+          content: content.split('\n').filter((line: string) => line.trim()).map((line: string) => ({
+            type: 'paragraph' as const,
+            text: line.trim(),
+          })),
+        },
+      ],
+    };
+  }
 }
 
 // Helper function to format document

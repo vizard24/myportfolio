@@ -61,14 +61,14 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
     setEditedProject(initialProject);
     setIsEditing(false);
   };
-  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setEditedProject(prev => ({...prev, [name]: value}));
+    setEditedProject(prev => ({ ...prev, [name]: value }));
   };
 
   const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>, linkType: LinkType) => {
-    setEditedProject(prev => ({...prev, [linkType]: e.target.value}));
+    setEditedProject(prev => ({ ...prev, [linkType]: e.target.value }));
   };
 
   const toggleLinkVisibility = (linkType: LinkType) => {
@@ -77,28 +77,28 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
       const tempStorageKey = `_${linkType}_hidden`;
       if (currentUrl !== undefined) {
         // @ts-ignore
-        return {...prev, [linkType]: undefined, [tempStorageKey]: currentUrl};
+        return { ...prev, [linkType]: undefined, [tempStorageKey]: currentUrl };
       } else {
         // @ts-ignore
-        return {...prev, [linkType]: prev[tempStorageKey] || '' };
+        return { ...prev, [linkType]: prev[tempStorageKey] || '' };
       }
     });
   };
 
   const handleTechDelete = (techNameToDelete: string) => {
     setEditedProject(prev => ({
-        ...prev,
-        techStack: prev.techStack.filter(tech => tech.name !== techNameToDelete)
+      ...prev,
+      techStack: prev.techStack.filter(tech => tech.name !== techNameToDelete)
     }));
   };
 
   const handleAddTech = () => {
     if (newTech && !editedProject.techStack.find(t => t.name.toLowerCase() === newTech.toLowerCase())) {
-        setEditedProject(prev => ({
-            ...prev,
-            techStack: [...prev.techStack, { name: newTech, iconName: 'Default' }]
-        }));
-        setNewTech("");
+      setEditedProject(prev => ({
+        ...prev,
+        techStack: [...prev.techStack, { name: newTech, iconName: 'Default' }]
+      }));
+      setNewTech("");
     }
   };
 
@@ -127,12 +127,12 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
   const handleDeleteClick = () => {
     onDelete(initialProject.id);
     toast({
-        title: "Project Deleted",
-        description: `"${initialProject.title}" has been removed.`,
-        variant: "destructive"
+      title: "Project Deleted",
+      description: `"${initialProject.title}" has been removed.`,
+      variant: "destructive"
     });
   }
-  
+
   const linkConfig: { key: LinkType, label: string, Icon: React.ElementType }[] = [
     { key: 'githubUrl', label: 'GitHub', Icon: Github },
     { key: 'liveDemoUrl', label: 'Live Demo', Icon: ExternalLink },
@@ -145,35 +145,35 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
   const currentProject = isEditing ? editedProject : initialProject;
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative">
+    <Card className="flex flex-col h-full overflow-hidden transform transition-all duration-300 hover:-translate-y-1 relative">
       {isAdminMode && !isEditing && (
         <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-8 w-8 text-white bg-black/30 hover:bg-black/50 z-10" onClick={() => setIsEditing(true)}>
           <Pencil className="h-4 w-4" />
         </Button>
       )}
       {isEditing && (
-         <div className="absolute top-2 right-2 z-10 flex gap-1">
-            <Button variant="default" size="icon" className="h-8 w-8" onClick={handleSave}><Save className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel}><X className="h-4 w-4" /></Button>
-             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the project
-                    "{initialProject.title}".
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteClick}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-         </div>
+        <div className="absolute top-2 right-2 z-10 flex gap-1">
+          <Button variant="default" size="icon" className="h-8 w-8" onClick={handleSave}><Save className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel}><X className="h-4 w-4" /></Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the project
+                  "{initialProject.title}".
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteClick}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       )}
       <div className="relative w-full h-56">
         {currentProject.imageUrl ? (
@@ -182,7 +182,7 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
             alt={currentProject.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            style={{objectFit: "cover"}}
+            style={{ objectFit: "cover" }}
             className="transition-transform duration-500 group-hover:scale-105"
             data-ai-hint={currentProject.imageHint || "technology project"}
           />
@@ -220,158 +220,188 @@ function ProjectCard({ project: initialProject, onSave, onDelete }: { project: P
       </div>
       <CardHeader>
         {isEditing ? (
-            <Input name="title" value={editedProject.title} onChange={handleInputChange} className="text-xl font-semibold"/>
+          <Input name="title" value={editedProject.title} onChange={handleInputChange} className="text-xl font-semibold" />
         ) : (
-            <CardTitle className="text-xl font-semibold text-primary">{currentProject.title}</CardTitle>
+          <CardTitle className="text-xl font-semibold text-primary">{currentProject.title}</CardTitle>
         )}
       </CardHeader>
       <CardContent className="flex-grow">
         {isEditing ? (
-            <Textarea name="description" value={editedProject.description} onChange={handleInputChange} rows={4} className="text-sm" />
+          <Textarea name="description" value={editedProject.description} onChange={handleInputChange} rows={4} className="text-sm" />
         ) : (
-            <CardDescription className="text-sm text-foreground/80 mb-4 leading-relaxed">
+          <CardDescription className="text-sm text-foreground/80 mb-4 leading-relaxed">
             {currentProject.description}
-            </CardDescription>
+          </CardDescription>
         )}
 
         <div className="flex flex-wrap gap-2 my-4">
           {currentProject.techStack.map((tech) => {
             const Icon = tech.iconName ? techIcons[tech.iconName] : null;
             return (
-                <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
-                  {Icon && <Icon className="h-3 w-3" />}
-                  {tech.name}
-                  {isEditing && (
-                     <button onClick={() => handleTechDelete(tech.name)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-4 w-4 flex items-center justify-center opacity-0 group-hover/badge:opacity-100 transition-opacity">
-                        <X className="h-3 w-3" />
-                     </button>
-                  )}
-                </Badge>
+              <Badge key={tech.name} variant="secondary" className="flex items-center gap-1 text-xs group/badge relative">
+                {Icon && <Icon className="h-3 w-3" />}
+                {tech.name}
+                {isEditing && (
+                  <button onClick={() => handleTechDelete(tech.name)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-4 w-4 flex items-center justify-center opacity-0 group-hover/badge:opacity-100 transition-opacity">
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </Badge>
             );
           })}
         </div>
         {isEditing && (
-            <div className="flex gap-2 mt-2">
-                <Input value={newTech} onChange={(e) => setNewTech(e.target.value)} placeholder="Add new tech" className="h-8 text-xs" />
-                <Button onClick={handleAddTech} size="sm" className="h-8 text-xs px-2"><PlusCircle className="h-4 w-4" /></Button>
-            </div>
+          <div className="flex gap-2 mt-2">
+            <Input value={newTech} onChange={(e) => setNewTech(e.target.value)} placeholder="Add new tech" className="h-8 text-xs" />
+            <Button onClick={handleAddTech} size="sm" className="h-8 text-xs px-2"><PlusCircle className="h-4 w-4" /></Button>
+          </div>
         )}
       </CardContent>
       <CardFooter className="mt-auto pt-0 pb-6 px-6 flex flex-col items-end gap-2">
         {isEditing ? (
-            <div className="w-full space-y-2 text-xs">
-                {linkConfig.map(({key, Icon, label}) => (
-                  <div key={key} className="flex items-center gap-2">
-                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => toggleLinkVisibility(key)}>
-                          {editedProject[key] !== undefined ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                      </Button>
-                      <Icon className="h-4 w-4" />
-                      <Input 
-                        disabled={editedProject[key] === undefined} 
-                        name={key}
-                        value={editedProject[key] || ''} 
-                        onChange={(e) => handleLinkChange(e, key)} 
-                        placeholder={`${label} URL`} />
-                  </div>
-                ))}
-            </div>
+          <div className="w-full space-y-2 text-xs">
+            {linkConfig.map(({ key, Icon, label }) => (
+              <div key={key} className="flex items-center gap-2">
+                <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => toggleLinkVisibility(key)}>
+                  {editedProject[key] !== undefined ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                </Button>
+                <Icon className="h-4 w-4" />
+                <Input
+                  disabled={editedProject[key] === undefined}
+                  name={key}
+                  value={editedProject[key] || ''}
+                  onChange={(e) => handleLinkChange(e, key)}
+                  placeholder={`${label} URL`} />
+              </div>
+            ))}
+          </div>
         ) : (
-            <div className="flex justify-end flex-wrap gap-2 w-full">
-                {linkConfig.map(({key, Icon, label}) => {
-                    const url = currentProject[key];
-                    if (!url) return null;
-                    const isPrimary = key === 'liveDemoUrl';
-                    return (
-                        <Button 
-                            key={key} 
-                            variant={isPrimary ? 'default' : 'outline'} 
-                            size="sm" asChild 
-                            className={isPrimary ? "bg-gradient-to-r from-[#FFA07A] to-[#FFDAB9] text-primary-foreground hover:opacity-90 transition-opacity" : ""}
-                        >
-                            <Link href={url} target="_blank" rel="noopener noreferrer">
-                            <Icon className="mr-2 h-4 w-4" /> {label}
-                            </Link>
-                        </Button>
-                    );
-                })}
-            </div>
+          <div className="flex justify-end flex-wrap gap-2 w-full">
+            {linkConfig.map(({ key, Icon, label }) => {
+              const url = currentProject[key];
+              if (!url) return null;
+              const isPrimary = key === 'liveDemoUrl';
+              return (
+                <Button
+                  key={key}
+                  variant={isPrimary ? 'default' : 'outline'}
+                  size="sm" asChild
+                  className={isPrimary ? "bg-gradient-to-r from-[#FFA07A] to-[#FFDAB9] text-primary-foreground hover:opacity-90 transition-opacity" : ""}
+                >
+                  <Link href={url} target="_blank" rel="noopener noreferrer">
+                    <Icon className="mr-2 h-4 w-4" /> {label}
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
         )}
       </CardFooter>
     </Card>
   );
 }
 
+import dynamic from 'next/dynamic';
+const ImmersiveProjectView = dynamic(() => import('@/components/home/immersive-project-view').then(mod => mod.ImmersiveProjectView), { ssr: false });
+import { LayoutGrid, Cuboid } from 'lucide-react';
+
 export default function ProjectsSection() {
-    const { isAdminMode } = useAdminMode();
-    const { projects, updateProject, addProject, deleteProject } = useSimplePortfolio();
-    const { toast } = useToast();
+  const { isAdminMode } = useAdminMode();
+  const { projects, updateProject, addProject, deleteProject, personalInfo, updatePersonalInfo } = useSimplePortfolio();
+  const { toast } = useToast();
 
-    // Ensure projects is always an array
-    const safeProjects = Array.isArray(projects) ? projects : [];
+  // Ensure projects is always an array
+  const safeProjects = Array.isArray(projects) ? projects : [];
 
-    const handleAddProject = async () => {
-        const newProject: Project = {
-            id: `project-${Date.now()}`,
-            title: 'New Project',
-            description: 'A brief description of your new project.',
-            imageUrl: '',
-            imageHint: 'new project placeholder',
-            techStack: [],
-        };
-        
-        try {
-            await addProject(newProject);
-            toast({
-                title: "Project Added",
-                description: "A new project card has been created. Click the edit icon to start adding details.",
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to add project. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleAddProject = async () => {
+    const newProject: Project = {
+      id: `project-${Date.now()}`,
+      title: 'New Project',
+      description: 'A brief description of your new project.',
+      imageUrl: '',
+      imageHint: 'new project placeholder',
+      techStack: [],
+    };
+
+    try {
+      await addProject(newProject);
+      toast({
+        title: "Project Added",
+        description: "A new project card has been created. Click the edit icon to start adding details.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add project. Please try again.",
+        variant: "destructive",
+      });
     }
+  }
 
-    const handleUpdateProject = async (updatedProject: Project) => {
-        try {
-            await updateProject(updatedProject);
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to update project. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleUpdateProject = async (updatedProject: Project) => {
+    try {
+      await updateProject(updatedProject);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive",
+      });
     }
+  }
 
-    const handleDeleteProject = async (projectId: string) => {
-        try {
-            await deleteProject(projectId);
-            toast({
-                title: "Project Deleted",
-                description: "The project has been removed.",
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to delete project. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      await deleteProject(projectId);
+      toast({
+        title: "Project Deleted",
+        description: "The project has been removed.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+      });
     }
+  }
+
+  const toggleDisplayMode = async () => {
+    if (!isAdminMode) return;
+    const newMode = personalInfo.projectDisplayMode === 'immersive' ? 'grid' : 'immersive';
+    try {
+      await updatePersonalInfo({ ...personalInfo, projectDisplayMode: newMode });
+      toast({
+        title: `Switched to ${newMode === 'immersive' ? 'Immersive' : 'Grid'} View`,
+        description: "The project display mode has been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update display mode.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const isImmersive = personalInfo.projectDisplayMode === 'immersive';
 
   return (
-    <SectionWrapper 
-      id="projects" 
-      title="My Projects" 
+    <SectionWrapper
+      id="projects"
+      title="My Projects"
       subtitle="A selection of projects I've worked on."
       headerActions={
         isAdminMode ? (
-          <Button variant="outline" size="sm" onClick={handleAddProject}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Project
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={toggleDisplayMode} title={isImmersive ? "Switch to Grid View" : "Switch to Immersive View"}>
+              {isImmersive ? <LayoutGrid className="h-4 w-4 mr-2" /> : <Cuboid className="h-4 w-4 mr-2" />}
+              {isImmersive ? "Grid View" : "3D View"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleAddProject}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Project
+            </Button>
+          </div>
         ) : null
       }
     >
@@ -383,19 +413,28 @@ export default function ProjectsSection() {
             </svg>
             <h3 className="text-lg font-medium mb-2">No Projects Yet</h3>
             <p className="text-sm">
-              {isAdminMode 
-                ? "Click the 'Add Project' button above to showcase your work." 
+              {isAdminMode
+                ? "Click the 'Add Project' button above to showcase your work."
                 : "Projects will appear here once they are added."
               }
             </p>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {safeProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} onSave={handleUpdateProject} onDelete={handleDeleteProject} />
-          ))}
-        </div>
+        isImmersive ? (
+          <ImmersiveProjectView
+            projects={safeProjects}
+            onEdit={handleUpdateProject}
+            onDelete={handleDeleteProject}
+            isAdminMode={isAdminMode}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {safeProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} onSave={handleUpdateProject} onDelete={handleDeleteProject} />
+            ))}
+          </div>
+        )
       )}
     </SectionWrapper>
   );

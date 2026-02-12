@@ -44,8 +44,8 @@ export default function AdminPage() {
               </Button>
             </LoginDialog>
             <div className="text-center">
-              <a 
-                href="/" 
+              <a
+                href="/"
                 className="text-sm text-muted-foreground hover:text-primary"
               >
                 ← Back to Portfolio
@@ -58,10 +58,6 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
-        <SimpleAdminDashboard />
-      </div>
-    </div>
+    <SimpleAdminDashboard />
   );
 }

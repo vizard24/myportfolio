@@ -53,7 +53,7 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
   useEffect(() => {
     setEditedItem(initialItem);
   }, [initialItem]);
-  
+
   const Icon = experienceIcons[editedItem.iconName || 'Briefcase'] || (editedItem.type === 'work' ? Briefcase : GraduationCap);
   const iconColor = iconColorClasses[editedItem.iconName || 'Default'] || iconColorClasses.Default;
 
@@ -70,31 +70,31 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
     setEditedItem(initialItem);
     setIsEditing(false);
   };
-  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-     if (name === 'description') {
-      setEditedItem(prev => ({...prev, [name]: value.split('\n')}));
+    if (name === 'description') {
+      setEditedItem(prev => ({ ...prev, [name]: value.split('\n') }));
     } else {
-      setEditedItem(prev => ({...prev, [name]: value}));
+      setEditedItem(prev => ({ ...prev, [name]: value }));
     }
   };
-  
+
   const handleIconChange = (iconName: string) => {
     setEditedItem(prev => ({ ...prev, iconName }));
   };
 
   const handleDeleteClick = () => {
     onDelete(initialItem.id);
-     toast({
-        title: "Experience Deleted",
-        description: `"${initialItem.title}" has been removed.`,
-        variant: "destructive"
+    toast({
+      title: "Experience Deleted",
+      description: `"${initialItem.title}" has been removed.`,
+      variant: "destructive"
     });
   }
 
-  const descriptionAsString = Array.isArray(editedItem.description) 
-    ? editedItem.description.join('\n') 
+  const descriptionAsString = Array.isArray(editedItem.description)
+    ? editedItem.description.join('\n')
     : '';
 
   const currentItem = isEditing ? editedItem : initialItem;
@@ -104,17 +104,17 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
       <span className={cn("absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-background shadow-md", iconColor)}>
         <Icon className="h-5 w-5 text-primary-foreground" />
       </span>
-      <Card className="ml-4 flex-1 overflow-hidden shadow-md rounded-lg transition-all duration-300 group-hover:shadow-xl transform group-hover:scale-[1.02] relative">
-         {isAdminMode && !isEditing && (
+      <Card className="ml-4 flex-1 overflow-hidden transition-all duration-300 transform group-hover:scale-[1.02] relative">
+        {isAdminMode && !isEditing && (
           <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-primary z-10" onClick={() => setIsEditing(true)}>
             <Pencil className="h-4 w-4" />
           </Button>
         )}
         {isEditing && (
-           <div className="absolute top-2 right-2 z-10 flex gap-1">
+          <div className="absolute top-2 right-2 z-10 flex gap-1">
             <Button variant="default" size="icon" className="h-8 w-8" onClick={handleSave}><Save className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel}><X className="h-4 w-4" /></Button>
-             <AlertDialog>
+            <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
               </AlertDialogTrigger>
@@ -131,59 +131,59 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-         </div>
+          </div>
         )}
         <CardHeader>
-           {isEditing ? (
-             <div className="space-y-2">
-                <div className='flex items-center gap-2'>
-                  <Select value={editedItem.iconName} onValueChange={handleIconChange}>
-                    <SelectTrigger className="w-20 h-10">
-                      <SelectValue placeholder="Icon" >
-                        {experienceIcons[editedItem.iconName || 'Briefcase'] ? 
-                          React.createElement(experienceIcons[editedItem.iconName || 'Briefcase'], { className: 'h-5 w-5' }) : 
-                          <Smile className="h-5 w-5" />}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {experienceIconNames.map(name => {
-                        const IconComponent = experienceIcons[name];
-                        return (
-                          <SelectItem key={name} value={name}>
-                            <div className="flex items-center gap-2">
-                              <IconComponent className="h-5 w-5" />
-                              <span>{name}</span>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  <Input name="title" value={editedItem.title} onChange={handleInputChange} placeholder="Title (e.g., Senior Software Engineer)" className="text-lg font-semibold h-auto"/>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
-                  <Input name="institution" value={editedItem.institution} onChange={handleInputChange} placeholder="Company / University" className="flex-1"/>
-                  <span className="hidden sm:inline">&bull;</span>
-                  <Input name="dateRange" value={editedItem.dateRange} onChange={handleInputChange} placeholder="Date Range (e.g., Jan 2021 - Present)" />
-                </div>
+          {isEditing ? (
+            <div className="space-y-2">
+              <div className='flex items-center gap-2'>
+                <Select value={editedItem.iconName} onValueChange={handleIconChange}>
+                  <SelectTrigger className="w-20 h-10">
+                    <SelectValue placeholder="Icon" >
+                      {experienceIcons[editedItem.iconName || 'Briefcase'] ?
+                        React.createElement(experienceIcons[editedItem.iconName || 'Briefcase'], { className: 'h-5 w-5' }) :
+                        <Smile className="h-5 w-5" />}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {experienceIconNames.map(name => {
+                      const IconComponent = experienceIcons[name];
+                      return (
+                        <SelectItem key={name} value={name}>
+                          <div className="flex items-center gap-2">
+                            <IconComponent className="h-5 w-5" />
+                            <span>{name}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Input name="title" value={editedItem.title} onChange={handleInputChange} placeholder="Title (e.g., Senior Software Engineer)" className="text-lg font-semibold h-auto" />
               </div>
-            ) : (
-              <>
-                <CardTitle className="text-lg font-semibold text-primary">{currentItem.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">{currentItem.institution} &bull; {currentItem.dateRange}</p>
-              </>
-            )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
+                <Input name="institution" value={editedItem.institution} onChange={handleInputChange} placeholder="Company / University" className="flex-1" />
+                <span className="hidden sm:inline">&bull;</span>
+                <Input name="dateRange" value={editedItem.dateRange} onChange={handleInputChange} placeholder="Date Range (e.g., Jan 2021 - Present)" />
+              </div>
+            </div>
+          ) : (
+            <>
+              <CardTitle className="text-lg font-semibold text-primary">{currentItem.title}</CardTitle>
+              <p className="text-sm text-muted-foreground">{currentItem.institution} &bull; {currentItem.dateRange}</p>
+            </>
+          )}
         </CardHeader>
         <CardContent>
           {isEditing ? (
-              <Textarea 
-                name="description" 
-                value={descriptionAsString} 
-                onChange={handleInputChange} 
-                rows={4}
-                placeholder="Enter description points, one per line."
-                className="text-sm"
-              />
+            <Textarea
+              name="description"
+              value={descriptionAsString}
+              onChange={handleInputChange}
+              rows={4}
+              placeholder="Enter description points, one per line."
+              className="text-sm"
+            />
           ) : (
             <ul className="list-disc list-inside space-y-1 text-sm text-foreground/80 leading-relaxed">
               {currentItem.description.map((desc, index) => (
@@ -198,73 +198,72 @@ function ExperienceItem({ item: initialItem, onSave, onDelete }: { item: Experie
 }
 
 export default function ExperienceSection() {
-    const { isAdminMode } = useAdminMode();
-    const { toast } = useToast();
-    const { experience, updateExperience, addExperience, deleteExperience } = useSimplePortfolio();
+  const { isAdminMode } = useAdminMode();
+  const { toast } = useToast();
+  const { experience, updateExperience, addExperience, deleteExperience } = useSimplePortfolio();
 
-    // Ensure experience is always an array
-    const safeExperience = Array.isArray(experience) ? experience : [];
+  // Ensure experience is always an array
+  const safeExperience = Array.isArray(experience) ? experience : [];
 
-    const handleAddExperience = async () => {
-       const newExperience: Experience = {
-            id: `exp-${Date.now()}`,
-            type: 'work',
-            title: 'New Position',
-            institution: 'Company Name',
-            dateRange: 'Start Date - End Date',
-            description: ['Responsibility or achievement.'],
-            iconName: 'Briefcase'
-        };
-        
-        try {
-            await addExperience(newExperience);
-            toast({
-                title: "Experience Added",
-                description: "A new experience card has been created. Click the edit icon to start adding details.",
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to add experience. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleAddExperience = async () => {
+    const newExperience: Experience = {
+      id: `exp-${Date.now()}`,
+      type: 'work',
+      title: 'New Position',
+      institution: 'Company Name',
+      dateRange: 'Start Date - End Date',
+      description: ['Responsibility or achievement.'],
+      iconName: 'Briefcase'
+    };
+
+    try {
+      await addExperience(newExperience);
+      toast({
+        title: "Experience Added",
+        description: "A new experience card has been created. Click the edit icon to start adding details.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add experience. Please try again.",
+        variant: "destructive",
+      });
     }
+  }
 
-    const handleUpdateExperience = async (updatedItem: Experience) => {
-        try {
-            await updateExperience(updatedItem);
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to update experience. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleUpdateExperience = async (updatedItem: Experience) => {
+    try {
+      await updateExperience(updatedItem);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update experience. Please try again.",
+        variant: "destructive",
+      });
     }
+  }
 
-    const handleDeleteExperience = async (itemId: string) => {
-        try {
-            await deleteExperience(itemId);
-            toast({
-                title: "Experience Deleted",
-                description: "The experience has been removed.",
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to delete experience. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleDeleteExperience = async (itemId: string) => {
+    try {
+      await deleteExperience(itemId);
+      toast({
+        title: "Experience Deleted",
+        description: "The experience has been removed.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete experience. Please try again.",
+        variant: "destructive",
+      });
     }
+  }
 
   return (
-    <SectionWrapper 
-      id="experience" 
-      title="My Journey" 
-      subtitle="Education and professional experience that shaped my career." 
-      className="bg-secondary/50"
+    <SectionWrapper
+      id="experience"
+      title="My Journey"
+      subtitle="Education and professional experience that shaped my career."
       headerActions={
         isAdminMode ? (
           <Button variant="outline" size="sm" onClick={handleAddExperience}>
@@ -276,7 +275,7 @@ export default function ExperienceSection() {
       <div className="relative">
         {/* Vertical line */}
         <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border hidden md:block" aria-hidden="true"></div>
-        
+
         <div className="space-y-12">
           {safeExperience.length === 0 ? (
             <div className="text-center py-12">
@@ -286,8 +285,8 @@ export default function ExperienceSection() {
                 </svg>
                 <h3 className="text-lg font-medium mb-2">No Experience Yet</h3>
                 <p className="text-sm">
-                  {isAdminMode 
-                    ? "Click the 'Add Experience' button above to add your professional journey." 
+                  {isAdminMode
+                    ? "Click the 'Add Experience' button above to add your professional journey."
                     : "Experience will appear here once it is added."
                   }
                 </p>

@@ -40,9 +40,9 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onUpdate({ ...skill, name: e.target.value });
   };
-  
+
   const handleLevelChange = (value: number[]) => {
-      onUpdate({ ...skill, level: value[0] });
+    onUpdate({ ...skill, level: value[0] });
   };
 
   const handleIconChange = (iconName: string) => {
@@ -52,32 +52,32 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
 
   return (
     <div className="mb-4 group">
-       {isEditing ? (
-            <div className="flex items-center gap-2 mb-2">
-                <Select value={skill.iconName?.toString() || ''} onValueChange={handleIconChange}>
-                    <SelectTrigger className="w-12 h-8">
-                         <SelectValue>
-                            {Icon ? <Icon className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
-                         </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.entries(techIcons).map(([name, IconComponent]) => (
-                             <SelectItem key={name} value={name}>
-                                <div className="flex items-center gap-2">
-                                   <IconComponent className="h-4 w-4" />
-                                   <span>{name}</span>
-                                </div>
-                             </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Input value={skill.name} onChange={handleNameChange} className="h-8 text-sm" />
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(skill.id)}>
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-            </div>
-       ) : (
-         <div className="flex justify-between items-center mb-1">
+      {isEditing ? (
+        <div className="flex items-center gap-2 mb-2">
+          <Select value={skill.iconName?.toString() || ''} onValueChange={handleIconChange}>
+            <SelectTrigger className="w-12 h-8">
+              <SelectValue>
+                {Icon ? <Icon className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(techIcons).map(([name, IconComponent]) => (
+                <SelectItem key={name} value={name}>
+                  <div className="flex items-center gap-2">
+                    <IconComponent className="h-4 w-4" />
+                    <span>{name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input value={skill.name} onChange={handleNameChange} className="h-8 text-sm" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(skill.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <div className="flex justify-between items-center mb-1">
           <div className="flex items-center gap-2">
             {Icon && (
               <TooltipProvider>
@@ -95,16 +95,16 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
           </div>
           <span className="text-xs text-muted-foreground">{skill.level}%</span>
         </div>
-       )}
-        
-        {isEditing ? (
-             <div className="flex items-center gap-2">
-                <Slider value={[skill.level]} onValueChange={handleLevelChange} className="flex-1" />
-                <span className="text-xs text-muted-foreground w-8 text-right">{skill.level}%</span>
-            </div>
-        ) : (
-             <Progress value={skill.level} className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-[#FFA07A] [&>div]:to-[#FFDAB9]" />
-        )}
+      )}
+
+      {isEditing ? (
+        <div className="flex items-center gap-2">
+          <Slider value={[skill.level]} onValueChange={handleLevelChange} className="flex-1" />
+          <span className="text-xs text-muted-foreground w-8 text-right">{skill.level}%</span>
+        </div>
+      ) : (
+        <Progress value={skill.level} className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-[#FFA07A] [&>div]:to-[#FFDAB9]" />
+      )}
     </div>
   );
 }
@@ -138,91 +138,91 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
     setEditedCategory(initialCategory);
     setIsEditing(false);
   };
-  
+
   const handleDeleteClick = () => {
     onDelete(initialCategory.id);
-     toast({
-        title: "Category Deleted",
-        description: `"${initialCategory.name}" has been removed.`,
-        variant: "destructive"
+    toast({
+      title: "Category Deleted",
+      description: `"${initialCategory.name}" has been removed.`,
+      variant: "destructive"
     });
   };
 
   const handleSkillUpdate = (updatedSkill: Skill) => {
     setEditedCategory(prev => ({
-        ...prev,
-        skills: prev.skills.map(s => s.id === updatedSkill.id ? updatedSkill : s)
+      ...prev,
+      skills: prev.skills.map(s => s.id === updatedSkill.id ? updatedSkill : s)
     }));
   };
 
   const handleSkillDelete = (skillId: string) => {
     setEditedCategory(prev => ({
-        ...prev,
-        skills: prev.skills.filter(s => s.id !== skillId)
+      ...prev,
+      skills: prev.skills.filter(s => s.id !== skillId)
     }));
   };
 
   const handleAddSkill = () => {
     const newSkill: Skill = {
-        id: `skill-${Date.now()}`,
-        name: 'New Skill',
-        level: 50,
-        iconName: 'Default',
+      id: `skill-${Date.now()}`,
+      name: 'New Skill',
+      level: 50,
+      iconName: 'Default',
     };
-    setEditedCategory(prev => ({ ...prev, skills: [...prev.skills, newSkill]}));
+    setEditedCategory(prev => ({ ...prev, skills: [...prev.skills, newSkill] }));
   };
 
   const currentCategory = isEditing ? editedCategory : initialCategory;
 
   return (
-    <Card className="shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative group/card">
-       {isAdminMode && !isEditing && (
-          <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-primary z-10" onClick={() => setIsEditing(true)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-        )}
-        {isEditing && (
-           <div className="absolute top-2 right-2 z-10 flex gap-1">
-            <Button variant="default" size="icon" className="h-8 w-8" onClick={handleSave}><Save className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel}><X className="h-4 w-4" /></Button>
-             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete the "{initialCategory.name}" category and all its skills.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteClick}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-         </div>
-        )}
+    <Card className="transform transition-all duration-300 hover:-translate-y-1 relative group/card">
+      {isAdminMode && !isEditing && (
+        <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-primary z-10" onClick={() => setIsEditing(true)}>
+          <Pencil className="h-4 w-4" />
+        </Button>
+      )}
+      {isEditing && (
+        <div className="absolute top-2 right-2 z-10 flex gap-1">
+          <Button variant="default" size="icon" className="h-8 w-8" onClick={handleSave}><Save className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancel}><X className="h-4 w-4" /></Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete the "{initialCategory.name}" category and all its skills.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteClick}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
       <CardHeader>
         {isEditing ? (
-            <Input 
-                value={editedCategory.name}
-                onChange={(e) => setEditedCategory(prev => ({...prev, name: e.target.value}))}
-                className="text-xl font-semibold text-center h-auto"
-            />
+          <Input
+            value={editedCategory.name}
+            onChange={(e) => setEditedCategory(prev => ({ ...prev, name: e.target.value }))}
+            className="text-xl font-semibold text-center h-auto"
+          />
         ) : (
-            <CardTitle className="text-xl font-semibold text-primary text-center">{currentCategory.name}</CardTitle>
+          <CardTitle className="text-xl font-semibold text-primary text-center">{currentCategory.name}</CardTitle>
         )}
       </CardHeader>
       <CardContent>
         {currentCategory.skills.map((skill) => (
           <SkillItem key={skill.id} skill={skill} isEditing={isEditing} onUpdate={handleSkillUpdate} onDelete={handleSkillDelete} />
         ))}
-         {isEditing && (
-            <Button variant="outline" size="sm" className="w-full mt-4" onClick={handleAddSkill}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Skill
-            </Button>
+        {isEditing && (
+          <Button variant="outline" size="sm" className="w-full mt-4" onClick={handleAddSkill}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Skill
+          </Button>
         )}
       </CardContent>
     </Card>
@@ -230,76 +230,76 @@ function SkillCategoryCard({ category: initialCategory, onSave, onDelete }: { ca
 }
 
 export default function SkillsSection() {
-    const { isAdminMode } = useAdminMode();
-    const { toast } = useToast();
-    const { skills, updateSkills } = useSimplePortfolio();
+  const { isAdminMode } = useAdminMode();
+  const { toast } = useToast();
+  const { skills, updateSkills } = useSimplePortfolio();
 
-    // Ensure skills is always an array
-    const safeSkills = Array.isArray(skills) ? skills : [];
+  // Ensure skills is always an array
+  const safeSkills = Array.isArray(skills) ? skills : [];
 
-    const handleAddCategory = async () => {
-        const newCategory: SkillCategory = {
-            id: `cat-${Date.now()}`,
-            name: 'New Category',
-            skills: [],
-        };
-        
-        try {
-            await updateSkills([...safeSkills, newCategory]);
-            toast({
-                title: "Category Added",
-                description: "A new skill category has been created. Click the edit icon to start adding skills.",
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to add skill category. Please try again.",
-                variant: "destructive",
-            });
-        }
+  const handleAddCategory = async () => {
+    const newCategory: SkillCategory = {
+      id: `cat-${Date.now()}`,
+      name: 'New Category',
+      skills: [],
     };
 
-    const handleUpdateCategory = async (updatedCategory: SkillCategory) => {
-        try {
-            await updateSkills(safeSkills.map(cat => cat.id === updatedCategory.id ? updatedCategory : cat));
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to update skill category. Please try again.",
-                variant: "destructive",
-            });
-        }
-    };
+    try {
+      await updateSkills([...safeSkills, newCategory]);
+      toast({
+        title: "Category Added",
+        description: "A new skill category has been created. Click the edit icon to start adding skills.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add skill category. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-    const handleDeleteCategory = async (categoryId: string) => {
-        try {
-            await updateSkills(safeSkills.filter(cat => cat.id !== categoryId));
-            toast({
-                title: "Category Deleted",
-                description: "The skill category has been removed.",
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to delete skill category. Please try again.",
-                variant: "destructive",
-            });
-        }
-    };
+  const handleUpdateCategory = async (updatedCategory: SkillCategory) => {
+    try {
+      await updateSkills(safeSkills.map(cat => cat.id === updatedCategory.id ? updatedCategory : cat));
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update skill category. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      await updateSkills(safeSkills.filter(cat => cat.id !== categoryId));
+      toast({
+        title: "Category Deleted",
+        description: "The skill category has been removed.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete skill category. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
 
   return (
-    <SectionWrapper 
-        id="skills" 
-        title="Technical Skills" 
-        subtitle="A snapshot of my expertise across various technologies."
-        headerActions={
-            isAdminMode ? (
-              <Button variant="outline" size="sm" onClick={handleAddCategory}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category
-              </Button>
-            ) : null
-        }
+    <SectionWrapper
+      id="skills"
+      title="Technical Skills"
+      subtitle="A snapshot of my expertise across various technologies."
+      headerActions={
+        isAdminMode ? (
+          <Button variant="outline" size="sm" onClick={handleAddCategory}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category
+          </Button>
+        ) : null
+      }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {safeSkills.length === 0 ? (
@@ -310,8 +310,8 @@ export default function SkillsSection() {
               </svg>
               <h3 className="text-lg font-medium mb-2">No Skills Yet</h3>
               <p className="text-sm">
-                {isAdminMode 
-                  ? "Click the 'Add Skill Category' button above to showcase your expertise." 
+                {isAdminMode
+                  ? "Click the 'Add Skill Category' button above to showcase your expertise."
                   : "Skills will appear here once they are added."
                 }
               </p>
@@ -319,8 +319,8 @@ export default function SkillsSection() {
           </div>
         ) : (
           safeSkills.map((category) => (
-            <SkillCategoryCard 
-              key={category.id} 
+            <SkillCategoryCard
+              key={category.id}
               category={category}
               onSave={handleUpdateCategory}
               onDelete={handleDeleteCategory}

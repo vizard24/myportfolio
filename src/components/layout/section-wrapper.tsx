@@ -32,21 +32,21 @@ export function SectionWrapper({
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-xl">
         {(title || subtitle || headerActions) && (
-            <div className="mb-12 text-center">
+          <div className="mb-12 text-center">
             {title && (
-                <div className="flex justify-center items-center gap-4">
-                    <h2 className={cn("text-3xl font-bold tracking-tight text-primary sm:text-4xl", titleClassName)}>
-                        {title}
-                    </h2>
-                    {headerActions}
-                </div>
+              <div className="flex justify-center items-center gap-4">
+                <h2 className={cn("text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent sm:text-4xl pb-2", titleClassName)}>
+                  {title}
+                </h2>
+                {headerActions}
+              </div>
             )}
             {subtitle && (
-                <p className={cn("mt-2 text-lg text-muted-foreground", subtitleClassName)}>
+              <p className={cn("mt-2 text-lg text-muted-foreground", subtitleClassName)}>
                 {subtitle}
-                </p>
+              </p>
             )}
-            </div>
+          </div>
         )}
         {children}
       </div>

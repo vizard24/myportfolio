@@ -18,9 +18,9 @@ const navItems = [
 ];
 
 const adminNavItems = [
-    { name: 'Admin Dashboard', href: '/admin' },
-    { name: 'Networking', href: '/#networking' },
-    { name: 'App Tracker', href: '/application-tracker' }
+  { name: 'Admin Dashboard', href: '/admin' },
+  { name: 'Networking', href: '/#networking' },
+  { name: 'App Tracker', href: '/application-tracker' }
 ]
 
 export default function Header() {
@@ -29,7 +29,7 @@ export default function Header() {
   const allNavItems = isAdminMode ? [...navItems, ...adminNavItems] : navItems;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <span className="font-bold sm:inline-block text-primary pl-4">

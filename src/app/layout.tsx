@@ -1,5 +1,6 @@
 
 import type {Metadata} from 'next';
+import { Outfit } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { NetworkingDataProvider } from '@/context/networking-context';
@@ -9,6 +10,8 @@ import { MessageProvider } from '@/context/message-context';
 import { SimplePortfolioProvider } from '@/context/simple-portfolio-context';
 import { ThemeProvider } from '@/context/theme-context';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+
+const outfit = Outfit({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Yaovi Portfolio',
@@ -25,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`${outfit.className} antialiased selection:bg-primary/20 selection:text-primary`}>
         <ThemeProvider>
           <AuthProvider>
             <AdminModeProvider>

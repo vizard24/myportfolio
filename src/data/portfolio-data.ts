@@ -20,7 +20,7 @@ export type Project = {
 };
 
 export type Experience = {
-  id:string;
+  id: string;
   type: 'work' | 'education';
   title: string;
   institution: string;
@@ -55,6 +55,7 @@ export type PersonalInfo = {
     discord: ContactLink;
   };
   profilePictureUrl: string;
+  profilePictureVisible: boolean;
   profilePictureHint: string;
   resumeSummaries: ResumeSummary[];
 }
@@ -127,6 +128,7 @@ export const personalInfo: PersonalInfo = {
     discord: { url: "", visible: false },
   },
   profilePictureUrl: "",
+  profilePictureVisible: true,
   profilePictureHint: "Add your professional photo",
   resumeSummaries: [],
 };
@@ -139,94 +141,94 @@ export const skillsData: SkillCategory[] = [];
 
 
 export const networkingContactsData: NetworkingContact[] = [
-    {
-      id: 'net-1',
-      name: 'Joe Abdul-Massih',
-      linkedinUrl: '',
-      companies: 'Bombardier',
-      positions: 'Senior Legal Counsel - IT, IP, AI, Cybersecurity & Privacy',
-      certifications: 'Cybersecurity Law, AI Governance, IT Transactions, Privacy Law, Strategic advisor, C-suite leadership, GDPR, SaaS negotiation',
-      college: 'Université de Montréal, LL.B. 2013-2016',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-2',
-      name: 'Aya Barbach',
-      linkedinUrl: '',
-      companies: 'BCF',
-      positions: 'Partner - Privacy, Data Protection & Cybersecurity',
-      certifications: 'Privacy, Data Protection, Cybersecurity Law, Licensed lawyer, risk management, board experience',
-      college: 'Université de Montréal, Master in IT Law, 2017-2019',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-3',
-      name: 'Mehdi M.',
-      linkedinUrl: '',
-      companies: 'Bell, HEC Montréal',
-      positions: 'Cybersecurity Specialist, Technical Assistant',
-      certifications: 'Vulnerability Management, ICT Security, Inclusive leadership, technical support, vulnerability audit',
-      college: 'Université de Montréal, B.Sc. Computer Science, 2024',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-4',
-      name: 'Robert Szalay',
-      linkedinUrl: '',
-      companies: 'Hydro Quebec, iA Financial, Desjardins',
-      positions: 'Cybersecurity Advisor, Analyst',
-      certifications: 'Information Security Analysis, Internal Threats, Risk analysis, compliance, threat monitoring',
-      college: 'Université de Montréal',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-5',
-      name: 'Normand Borduas',
-      linkedinUrl: '',
-      companies: 'Crowe BGK, Police Service',
-      positions: 'Digital Forensics & Cybersecurity Lead',
-      certifications: 'Digital Forensics, Security Consulting, Law Enforcement, Ethical hacking, lab management, criminalistics',
-      college: 'Université de Montréal',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-6',
-      name: 'Antoine Guilmain',
-      linkedinUrl: '',
-      companies: 'Gowling WLG, Meta',
-      positions: 'Partner & Co-Leader Cybersecurity & Data Protection, Legal Counsel, Professor',
-      certifications: 'Data Privacy Law, Cybersecurity Law, Academic Leadership, GDPR/AIDA legal consultant, academic, privacy advocacy',
-      college: 'Université de Montréal, Ph.D. Cyberjustice/IT, 2012-2018',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-7',
-      name: 'Marie-Christine Larocque',
-      linkedinUrl: '',
-      companies: 'CGI, Randstad',
-      positions: 'Strategic Talent Acquisition Partner (Cybersecurity)',
-      certifications: 'Cybersecurity Talent Acquisition, HR Leadership, Global recruitment strategy, exec sourcing, DEI initiatives',
-      college: 'Université de Montréal, Bachelor, Industrial Relations, 2011',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-8',
-      name: 'Tatiana Safi',
-      linkedinUrl: '',
-      companies: 'IT',
-      positions: 'Sr. Project Manager - CyberSecurity',
-      certifications: 'Cybersecurity Project Management, IT Operations, Project delivery, team coordination, cross-functional IT',
-      college: 'Université de Montréal',
-      status: 'Not Contacted',
-    },
-    {
-      id: 'net-9',
-      name: 'Guillaume Pinat',
-      linkedinUrl: '',
-      companies: 'IT',
-      positions: 'IT Infrastructure & Cybersecurity Graduate; System Admin/Network/Cloud',
-      certifications: 'IT Systems, Infrastructure Security, Cloud & Networks, System admin, networking, cloud security',
-      college: 'Université de Montréal',
-      status: 'Not Contacted',
-    },
+  {
+    id: 'net-1',
+    name: 'Joe Abdul-Massih',
+    linkedinUrl: '',
+    companies: 'Bombardier',
+    positions: 'Senior Legal Counsel - IT, IP, AI, Cybersecurity & Privacy',
+    certifications: 'Cybersecurity Law, AI Governance, IT Transactions, Privacy Law, Strategic advisor, C-suite leadership, GDPR, SaaS negotiation',
+    college: 'Université de Montréal, LL.B. 2013-2016',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-2',
+    name: 'Aya Barbach',
+    linkedinUrl: '',
+    companies: 'BCF',
+    positions: 'Partner - Privacy, Data Protection & Cybersecurity',
+    certifications: 'Privacy, Data Protection, Cybersecurity Law, Licensed lawyer, risk management, board experience',
+    college: 'Université de Montréal, Master in IT Law, 2017-2019',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-3',
+    name: 'Mehdi M.',
+    linkedinUrl: '',
+    companies: 'Bell, HEC Montréal',
+    positions: 'Cybersecurity Specialist, Technical Assistant',
+    certifications: 'Vulnerability Management, ICT Security, Inclusive leadership, technical support, vulnerability audit',
+    college: 'Université de Montréal, B.Sc. Computer Science, 2024',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-4',
+    name: 'Robert Szalay',
+    linkedinUrl: '',
+    companies: 'Hydro Quebec, iA Financial, Desjardins',
+    positions: 'Cybersecurity Advisor, Analyst',
+    certifications: 'Information Security Analysis, Internal Threats, Risk analysis, compliance, threat monitoring',
+    college: 'Université de Montréal',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-5',
+    name: 'Normand Borduas',
+    linkedinUrl: '',
+    companies: 'Crowe BGK, Police Service',
+    positions: 'Digital Forensics & Cybersecurity Lead',
+    certifications: 'Digital Forensics, Security Consulting, Law Enforcement, Ethical hacking, lab management, criminalistics',
+    college: 'Université de Montréal',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-6',
+    name: 'Antoine Guilmain',
+    linkedinUrl: '',
+    companies: 'Gowling WLG, Meta',
+    positions: 'Partner & Co-Leader Cybersecurity & Data Protection, Legal Counsel, Professor',
+    certifications: 'Data Privacy Law, Cybersecurity Law, Academic Leadership, GDPR/AIDA legal consultant, academic, privacy advocacy',
+    college: 'Université de Montréal, Ph.D. Cyberjustice/IT, 2012-2018',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-7',
+    name: 'Marie-Christine Larocque',
+    linkedinUrl: '',
+    companies: 'CGI, Randstad',
+    positions: 'Strategic Talent Acquisition Partner (Cybersecurity)',
+    certifications: 'Cybersecurity Talent Acquisition, HR Leadership, Global recruitment strategy, exec sourcing, DEI initiatives',
+    college: 'Université de Montréal, Bachelor, Industrial Relations, 2011',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-8',
+    name: 'Tatiana Safi',
+    linkedinUrl: '',
+    companies: 'IT',
+    positions: 'Sr. Project Manager - CyberSecurity',
+    certifications: 'Cybersecurity Project Management, IT Operations, Project delivery, team coordination, cross-functional IT',
+    college: 'Université de Montréal',
+    status: 'Not Contacted',
+  },
+  {
+    id: 'net-9',
+    name: 'Guillaume Pinat',
+    linkedinUrl: '',
+    companies: 'IT',
+    positions: 'IT Infrastructure & Cybersecurity Graduate; System Admin/Network/Cloud',
+    certifications: 'IT Systems, Infrastructure Security, Cloud & Networks, System admin, networking, cloud security',
+    college: 'Université de Montréal',
+    status: 'Not Contacted',
+  },
 ];
