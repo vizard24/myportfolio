@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface AnimatedSectionProps {
@@ -11,62 +12,63 @@ interface AnimatedSectionProps {
   duration?: number;
 }
 
-export function AnimatedSection({ 
-  children, 
-  className, 
+export function AnimatedSection({
+  children,
+  className,
   animation = 'fade-up',
   delay = 0,
-  duration = 600
+  duration = 800
 }: AnimatedSectionProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => setIsVisible(true), delay);
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    );
-
-    if (ref.current) {
-      observer.observe(ref.current);
+  const getVariants = () => {
+    switch (animation) {
+      case 'fade-up':
+        return {
+          hidden: { opacity: 0, y: 40 },
+          visible: { opacity: 1, y: 0 }
+        };
+      case 'fade-in':
+        return {
+          hidden: { opacity: 0 },
+          visible: { opacity: 1 }
+        };
+      case 'slide-left':
+        return {
+          hidden: { opacity: 0, x: -40 },
+          visible: { opacity: 1, x: 0 }
+        };
+      case 'slide-right':
+        return {
+          hidden: { opacity: 0, x: 40 },
+          visible: { opacity: 1, x: 0 }
+        };
+      case 'scale-up':
+        return {
+          hidden: { opacity: 0, scale: 0.9, y: 20 },
+          visible: { opacity: 1, scale: 1, y: 0 }
+        };
+      default:
+        return {
+          hidden: { opacity: 0, y: 40 },
+          visible: { opacity: 1, y: 0 }
+        };
     }
-
-    return () => observer.disconnect();
-  }, [delay]);
-
-  const getAnimationClasses = () => {
-    const baseClasses = `transition-all duration-${duration} ease-out`;
-    
-    if (!isVisible) {
-      switch (animation) {
-        case 'fade-up':
-          return `${baseClasses} opacity-0 translate-y-8`;
-        case 'fade-in':
-          return `${baseClasses} opacity-0`;
-        case 'slide-left':
-          return `${baseClasses} opacity-0 -translate-x-8`;
-        case 'slide-right':
-          return `${baseClasses} opacity-0 translate-x-8`;
-        case 'scale-up':
-          return `${baseClasses} opacity-0 scale-95`;
-        default:
-          return `${baseClasses} opacity-0 translate-y-8`;
-      }
-    }
-    
-    return `${baseClasses} opacity-100 translate-y-0 translate-x-0 scale-100`;
   };
 
   return (
-    <div
-      ref={ref}
-      className={cn(getAnimationClasses(), className)}
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{
+        duration: duration / 1000,
+        delay: delay / 1000,
+        ease: [0.22, 1, 0.36, 1]
+      }}
+      variants={getVariants()}
+      className={cn(className)}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

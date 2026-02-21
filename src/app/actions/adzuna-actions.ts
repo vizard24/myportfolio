@@ -39,6 +39,7 @@ export interface Job {
     datePosted: string;
     salary?: string;
     category: string;
+    source?: string[]; // which APIs found this job
 }
 
 export async function searchJobsAction(filters: JobSearchFilters): Promise<{ success: boolean; data?: Job[]; count?: number; error?: string }> {
@@ -60,26 +61,61 @@ export async function searchJobsAction(filters: JobSearchFilters): Promise<{ suc
             results_per_page: '20',
         });
 
-        if (filters.what) params.append('what', filters.what);
-        if (filters.where) params.append('where', filters.where);
+        if (filters.what) {
+            // First try strict search (AND)
+            params.append('what', filters.what.trim());
+        }
+        if (filters.where) params.append('where', filters.where.trim());
         if (filters.max_days_old) params.append('max_days_old', filters.max_days_old.toString());
         if (filters.category) params.append('category', filters.category);
 
         // Adzuna API URL structure: https://api.adzuna.com/v1/api/jobs/{country}/search/{page}
-        const apiUrl = `https://api.adzuna.com/v1/api/jobs/${country}/search/${page}?${params.toString()}`;
+        // We need to reconstruct the URL logic to support the retry mechanism clearly
+        const buildUrl = (searchParams: URLSearchParams) =>
+            `https://api.adzuna.com/v1/api/jobs/${country}/search/${page}?${searchParams.toString()}`;
 
-        console.log(`Fetching jobs from Adzuna: ${apiUrl.replace(appId, '***').replace(appKey, '***')}`);
+        let apiUrl = buildUrl(params);
 
-        const response = await fetch(apiUrl);
+        console.log(`Fetching jobs from Adzuna (Strict): ${apiUrl.replace(appId, '***').replace(appKey, '***')}`);
+
+        let response = await fetch(apiUrl);
 
         if (!response.ok) {
             console.error(`Adzuna API error: ${response.status} ${response.statusText}`);
-            const errorText = await response.text();
-            console.error(`Adzuna API Error Details: ${errorText}`);
             return { success: false, error: `API Error: ${response.statusText}` };
         }
 
-        const data: AdzunaResponse = await response.json();
+        let data: AdzunaResponse = await response.json();
+
+        // SMART FALLBACK: If strict search returns no results and we have multiple terms, try broad search (OR)
+        if (data.results.length === 0 && filters.what && filters.what.trim().split(/\s+/).length > 1) {
+            console.log('Strict search returned 0 results. Attempting broad search (OR)...');
+
+            // Create new params for broad search
+            const broadParams = new URLSearchParams({
+                app_id: appId,
+                app_key: appKey,
+                results_per_page: '20',
+            });
+
+            // Use 'what_or' instead of 'what'
+            broadParams.append('what_or', filters.what.trim());
+
+            if (filters.where) broadParams.append('where', filters.where.trim());
+            if (filters.max_days_old) broadParams.append('max_days_old', filters.max_days_old.toString());
+            // We keep other filters to ensure relevance
+
+            const broadUrl = buildUrl(broadParams);
+            const broadResponse = await fetch(broadUrl);
+
+            if (broadResponse.ok) {
+                const broadData: AdzunaResponse = await broadResponse.json();
+                if (broadData.results.length > 0) {
+                    console.log(`Broad search found ${broadData.results.length} results.`);
+                    data = broadData; // Use the broad results
+                }
+            }
+        }
 
         const jobs: Job[] = data.results.map(item => ({
             id: String(item.id),

@@ -103,7 +103,7 @@ function SkillItem({ skill, isEditing, onUpdate, onDelete }: { skill: Skill; isE
           <span className="text-xs text-muted-foreground w-8 text-right">{skill.level}%</span>
         </div>
       ) : (
-        <Progress value={skill.level} className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-[#FFA07A] [&>div]:to-[#FFDAB9]" />
+        <Progress value={skill.level} className="h-2 [&>div]:bg-primary" />
       )}
     </div>
   );

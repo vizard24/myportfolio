@@ -1,5 +1,5 @@
 
-import type { LucideIcon } from 'lucide-react';
+// import type { LucideIcon } from 'lucide-react';
 import { Briefcase, GraduationCap, GitMerge, Cpu, Database, Users, Palette, MessageSquare, Brain, Settings, Cloud, Rocket, CodeXml, TestTube2, Link, BarChartBig, FileText, PlayCircle, BookMarked, PenTool, Twitter, Instagram, Award, Building } from 'lucide-react';
 import { type NetworkingContact } from '@/context/networking-context';
 
@@ -58,10 +58,11 @@ export type PersonalInfo = {
   profilePictureVisible: boolean;
   profilePictureHint: string;
   resumeSummaries: ResumeSummary[];
+  projectDisplayMode?: 'grid' | 'immersive';
 }
 
 
-export const experienceIcons: { [key: string]: LucideIcon } = {
+export const experienceIcons: { [key: string]: any } = {
   Briefcase,
   GraduationCap,
   Award,
@@ -85,7 +86,7 @@ export type SkillCategory = {
   skills: Skill[];
 }
 
-export const techIcons: { [key: string]: LucideIcon } = {
+export const techIcons: { [key: string]: any } = {
   React: CodeXml,
   NextJS: CodeXml,
   VueJS: CodeXml,
@@ -131,6 +132,7 @@ export const personalInfo: PersonalInfo = {
   profilePictureVisible: true,
   profilePictureHint: "Add your professional photo",
   resumeSummaries: [],
+  projectDisplayMode: 'grid',
 };
 
 export const projectsData: Project[] = [];

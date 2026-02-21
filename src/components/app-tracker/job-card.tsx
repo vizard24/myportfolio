@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Calendar, MapPin, Building2, Briefcase, Bookmark } from "lucide-react";
+import { ExternalLink, Calendar, MapPin, Building2, Briefcase, Bookmark, BookmarkPlus, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { Job } from "@/app/actions/adzuna-actions";
 import type { JobMatchScore } from "@/app/actions/job-match-action";
@@ -11,10 +12,12 @@ interface JobCardProps {
     job: Job;
     matchScore?: JobMatchScore;
     onSaveToHistory?: (job: Job, matchScore: JobMatchScore) => Promise<void>;
+    onDirectSave?: (job: Job) => Promise<void>;
     isSaved?: boolean;
+    isSaving?: boolean;
 }
 
-export function JobCard({ job, matchScore, onSaveToHistory, isSaved }: JobCardProps) {
+export function JobCard({ job, matchScore, onSaveToHistory, onDirectSave, isSaved, isSaving }: JobCardProps) {
     const postedDate = new Date(job.datePosted);
     const timeAgo = formatDistanceToNow(postedDate, { addSuffix: true });
 
@@ -25,9 +28,25 @@ export function JobCard({ job, matchScore, onSaveToHistory, isSaved }: JobCardPr
                     <CardTitle className="text-lg font-semibold line-clamp-2 flex-1" title={job.title}>
                         {job.title}
                     </CardTitle>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                        {isSaved && (
-                            <Bookmark className="h-4 w-4 text-primary fill-primary" title="Saved to history" />
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {/* Direct Save button */}
+                        {onDirectSave && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => onDirectSave(job)}
+                                disabled={isSaved || isSaving}
+                                title={isSaved ? "Already saved to App Tracker" : "Save to App Tracker"}
+                            >
+                                {isSaving ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                ) : isSaved ? (
+                                    <Bookmark className="h-4 w-4 text-primary fill-primary" />
+                                ) : (
+                                    <BookmarkPlus className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                                )}
+                            </Button>
                         )}
                         <Button size="sm" asChild className="h-8">
                             <a href={job.url} target="_blank" rel="noopener noreferrer">
@@ -48,25 +67,33 @@ export function JobCard({ job, matchScore, onSaveToHistory, isSaved }: JobCardPr
                 </div>
             </CardHeader>
             <CardContent className="flex-grow pb-3">
-                <p className="text-sm line-clamp-3 mb-3 text-muted-foreground">
-                    {job.description}
-                </p>
+                <p className="text-sm line-clamp-3 mb-3 text-muted-foreground">{job.description}</p>
                 <div className="flex flex-wrap gap-2 text-xs">
-                    <Badge variant="secondary" className="font-normal opacity-80">
-                        {job.category}
-                    </Badge>
+                    <Badge variant="secondary" className="font-normal opacity-80">{job.category}</Badge>
                     {job.salary && (
                         <Badge variant="secondary" className="font-normal opacity-80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200">
-                            <Briefcase className="h-3 w-3 mr-1" />
-                            {job.salary}
+                            <Briefcase className="h-3 w-3 mr-1" />{job.salary}
                         </Badge>
                     )}
                 </div>
             </CardContent>
             <CardFooter className="pt-0 border-t bg-muted/20 flex justify-between items-center px-6 py-3 mt-auto">
-                <div className="flex items-center text-xs text-muted-foreground" title={postedDate.toLocaleDateString()}>
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {timeAgo}
+                <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center text-xs text-muted-foreground" title={postedDate.toLocaleDateString()}>
+                        <Calendar className="h-3 w-3 mr-1" />{timeAgo}
+                    </div>
+                    {job.source && job.source.length > 0 && (
+                        <div className="flex items-center gap-1">
+                            {job.source.map(s => (
+                                <span
+                                    key={s}
+                                    className="text-[10px] px-1.5 py-0.5 rounded-full border border-border text-muted-foreground/70 bg-muted/40 font-medium leading-none"
+                                >
+                                    {s}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 {matchScore && (
                     <JobFitDialog job={job} matchScore={matchScore} onSaveToHistory={onSaveToHistory} />

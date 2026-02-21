@@ -2,7 +2,9 @@
 import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "react";
 
-interface SectionWrapperProps extends HTMLAttributes<HTMLElement> {
+import { HTMLMotionProps } from "framer-motion";
+
+interface SectionWrapperProps extends Omit<HTMLMotionProps<"section">, "onDrag"> {
   id: string;
   title?: string;
   subtitle?: string;
@@ -12,6 +14,8 @@ interface SectionWrapperProps extends HTMLAttributes<HTMLElement> {
   subtitleClassName?: string;
   headerActions?: React.ReactNode;
 }
+
+import { motion } from "framer-motion";
 
 export function SectionWrapper({
   id,
@@ -25,10 +29,14 @@ export function SectionWrapper({
   ...props
 }: SectionWrapperProps) {
   return (
-    <section
+    <motion.section
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
       id={id}
       className={cn("py-16 md:py-24", className)}
-      {...props}
+      {...props as any}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-xl">
         {(title || subtitle || headerActions) && (
@@ -50,6 +58,6 @@ export function SectionWrapper({
         )}
         {children}
       </div>
-    </section>
+    </motion.section>
   );
 }

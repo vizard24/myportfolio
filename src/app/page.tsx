@@ -8,21 +8,21 @@ import ExperienceSection from '@/components/home/experience-section';
 import SkillsSection from '@/components/home/skills-section';
 import ContactSection from '@/components/home/contact-section';
 import Footer from '@/components/layout/footer';
-import NetworkingSection from '@/components/home/networking-section';
 import { useAdminMode } from '@/context/admin-mode-context';
+import { BackgroundBlobs } from '@/components/ui/background-blobs';
 
 function PageContent() {
   const { isAdminMode } = useAdminMode();
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen relative overflow-x-hidden">
+      <BackgroundBlobs />
       <Header />
-      <main className="flex-grow">
+      <main className="flex-grow z-10">
         <IntroductionSection />
         <ProjectsSection />
         <ExperienceSection />
         <SkillsSection />
         <ContactSection />
-        {isAdminMode && <NetworkingSection />}
       </main>
       <Footer />
     </div>

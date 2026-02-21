@@ -39,12 +39,12 @@ export default function ContactSection() {
         <SectionWrapper
             id="contact"
             title="Get In Touch"
-            titleClassName="from-[#FFA07A] to-[#FFDAB9]"
+            titleClassName="text-primary"
             subtitle="I'm open to discussing new projects, creative ideas, or opportunities to be part of your vision."
             headerActions={
                 isAdminMode ? (
                     <ViewMessagesDialog>
-                        <Button variant="outline" size="sm" className={hasUnreadMessages ? 'glow-orange' : ''}>
+                        <Button variant="outline" size="sm" className={hasUnreadMessages ? 'ring-2 ring-primary animate-pulse' : ''}>
                             <MessageSquare className="mr-2 h-4 w-4" /> Your Messages
                         </Button>
                     </ViewMessagesDialog>
@@ -54,7 +54,7 @@ export default function ContactSection() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
                 <Card className="">
                     <CardHeader>
-                        <CardTitle className="text-xl font-semibold text-[#FFA07A]">Send me a message</CardTitle>
+                        <CardTitle className="text-xl font-semibold text-primary">Send me a message</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,7 +70,7 @@ export default function ContactSection() {
                                 <label htmlFor="message" className="text-sm font-medium text-muted-foreground">Message</label>
                                 <Textarea id="message" name="message" placeholder="Your Message" rows={5} required />
                             </div>
-                            <Button type="submit" className="w-full bg-gradient-to-r from-[#FFA07A] to-[#FFDAB9] text-primary-foreground hover:opacity-90 transition-opacity">
+                            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
                                 <Send className="mr-2 h-4 w-4" /> Send Message
                             </Button>
                         </form>
@@ -78,23 +78,23 @@ export default function ContactSection() {
                 </Card>
 
                 <div className="space-y-6 flex flex-col justify-center">
-                    <h3 className="text-xl font-semibold text-[#FFA07A]">Contact Information</h3>
+                    <h3 className="text-xl font-semibold text-primary">Contact Information</h3>
                     <p className="text-muted-foreground">
                         Feel free to reach out via email or connect with me on social media. I'm always happy to chat!
                     </p>
                     <div className="space-y-4 text-sm">
                         {personalInfo.contact.email.visible && (
                             <div className="flex items-center gap-3">
-                                <Mail className="h-5 w-5 text-[#FFA07A]" />
-                                <a href={`mailto:${personalInfo.contact.email.url}`} className="text-foreground hover:text-[#FFA07A] transition-colors">
+                                <Mail className="h-5 w-5 text-primary" />
+                                <a href={`mailto:${personalInfo.contact.email.url}`} className="text-foreground hover:text-primary transition-colors">
                                     {personalInfo.contact.email.url}
                                 </a>
                             </div>
                         )}
                         {personalInfo.contact.linkedin.visible && (
                             <div className="flex items-center gap-3">
-                                <Linkedin className="h-5 w-5 text-[#FFA07A]" />
-                                <a href={personalInfo.contact.linkedin.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-[#FFA07A] transition-colors">
+                                <Linkedin className="h-5 w-5 text-primary" />
+                                <a href={personalInfo.contact.linkedin.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
                                     Connect on LinkedIn
                                 </a>
                             </div>

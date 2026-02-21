@@ -36,6 +36,43 @@ export async function analyzeSkillsAction(input: SkillsAnalysisInput) {
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Unknown error during skills analysis'
+        }
+    }
+}
+
+/**
+ * Wraps the resume critique AI flow in a server action.
+ */
+export async function critiqueResumeAction(input: import('@/ai/schemas/resume-critique-schema').ResumeCritiqueInput) {
+    console.log('Server Action: Triggering deep resume critique...');
+    try {
+        const { critiqueTailoredResume } = await import('@/ai/flows/resume-critique-flow');
+        const result = await critiqueTailoredResume(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Server Action Error (Resume Critique):', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error during resume critique'
+        };
+    }
+}
+
+
+/**
+ * Wraps the resume rewrite AI flow in a server action.
+ */
+export async function rewriteResumeAction(input: import('@/ai/schemas/resume-rewrite-schema').ResumeRewriteInput) {
+    console.log('Server Action: Triggering resume rewrite...');
+    try {
+        const { rewriteResumeFlow } = await import('@/ai/flows/resume-rewrite-flow');
+        const result = await rewriteResumeFlow(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Server Action Error (Resume Rewrite):', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error during resume rewrite'
         };
     }
 }

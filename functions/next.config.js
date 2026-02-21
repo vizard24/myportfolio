@@ -1,6 +1,3 @@
 module.exports = {
-  distDir: '../.next',
-  experimental: {
-    outputFileTracingRoot: '../',
-  },
+  distDir: '.next',
 };

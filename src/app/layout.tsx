@@ -1,5 +1,5 @@
 
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import { Outfit } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -17,7 +17,8 @@ export const metadata: Metadata = {
   title: 'Yaovi Portfolio',
   description: 'A personal portfolio showcasing projects, experience, and skills, with an AI-powered resume pitch generator.',
   icons: {
-    icon: '/YFL.png',
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
   },
 };
 

@@ -16,6 +16,7 @@ import { SocialIcons } from '@/components/layout/footer';
 import { useMessages } from '@/context/message-context';
 import { ViewMessagesDialog } from '@/components/admin/view-messages-dialog';
 import { useSimplePortfolio } from '@/context/simple-portfolio-context';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function IntroductionSection() {
   const { isAdminMode } = useAdminMode();
@@ -27,6 +28,10 @@ export default function IntroductionSection() {
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const [resumeUrl, setResumeUrl] = useState('/resume.pdf');
   const [editedInfo, setEditedInfo] = useState(personalInfo);
+
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   useEffect(() => {
     if (!isAdminMode) {
@@ -103,13 +108,17 @@ export default function IntroductionSection() {
   }
 
   return (
-    <section id="home" className="py-12 sm:py-16 lg:py-24">
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 max-w-7xl">
+    <section id="home" className="py-12 sm:py-16 lg:py-24 relative">
+      <motion.div style={{ y, opacity }} className="container mx-auto px-6 sm:px-8 lg:px-12 max-w-7xl">
         <div className="flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-16">
           <AnimatedSection animation="scale-up" delay={200}>
             <div className="flex justify-center lg:flex-shrink-0">
               {(personalInfo.profilePictureVisible !== false || isAdminMode) && (
-                <div className={`relative ${!personalInfo.profilePictureVisible && isAdminMode ? 'opacity-50 grayscale' : ''}`}>
+                <motion.div
+                  className={`relative ${!personalInfo.profilePictureVisible && isAdminMode ? 'opacity-50 grayscale' : ''}`}
+                  animate={{ y: [0, -15, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                >
                   <Card className="w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-[2rem] overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl dark:shadow-2xl dark:shadow-primary/20 border-4 border-background">
                     {personalInfo.profilePictureUrl ? (
                       <Image
@@ -162,7 +171,7 @@ export default function IntroductionSection() {
                     }}
                     className="hidden"
                   />
-                </div>
+                </motion.div>
               )}
             </div>
           </AnimatedSection>
@@ -206,7 +215,7 @@ export default function IntroductionSection() {
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
-                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent pb-2">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-primary via-purple-400 to-accent bg-[length:200%_auto] animate-gradient bg-clip-text text-transparent pb-2 tracking-tight">
                       {personalInfo.name}
                     </h1>
                     {isAdminMode && (
@@ -255,7 +264,7 @@ export default function IntroductionSection() {
             </div>
           </AnimatedSection>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

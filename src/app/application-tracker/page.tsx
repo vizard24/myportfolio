@@ -7,7 +7,7 @@ import { useAuth } from '@/context/auth-context';
 import { useSimplePortfolio } from '@/context/simple-portfolio-context';
 import { tailorResumeAction, analyzeSkillsAction } from '@/app/actions/ai-actions';
 import type { SkillAnalysis } from '@/ai/schemas/skills-analysis-schema';
-import { JobSearch } from '@/components/app-tracker/job-search';
+import { EnhancedResumeDialog } from '@/components/app-tracker/enhanced-resume-dialog';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -22,10 +22,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -40,7 +41,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, UnderlineType, BorderStyle } from 'docx';
 import { saveAs } from 'file-saver';
 import { formatDocument, type FormattedDocument } from '@/ai/flows/document-formatter-flow';
@@ -492,14 +493,22 @@ interface SavedApplication {
   company?: string;
   jobDescription: string;
   applicationLink?: string;
+  jobUrl?: string;
   tailoredResume: string;
   coverLetter: string;
   language: string;
   matchingScore: number;
   matchingSkills: string[];
   lackingSkills: string[];
+  resumeCritique?: import('@/ai/schemas/resume-critique-schema').ResumeCritique;
   applied?: boolean;
+  positionId?: string; // links history item to a targeted position
   createdAt: { seconds: number; nanoseconds: number; } | Date;
+}
+
+interface TargetPosition {
+  id: string;
+  title: string;
 }
 
 function DocumentDisplayDialog({ title, content, onDownload }: { title: string; content: string; onDownload: () => void; }) {
@@ -555,6 +564,7 @@ function DocumentDisplayDialog({ title, content, onDownload }: { title: string; 
 
 
 function ApplicationDetailDialog({ application }: { application: SavedApplication }) {
+  const { personalInfo } = useSimplePortfolio();
   const { toast } = useToast();
 
   const handleDownloadWord = async (content: string, fileName: string, documentType: 'resume' | 'cover-letter') => {
@@ -584,6 +594,46 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
     }
   };
 
+  // Update resume in Firestore (creates document if it doesn't exist)
+  const handleResumeUpdate = async (newResume: string) => {
+    try {
+      const docRef = doc(db, 'applications', application.id);
+      await setDoc(docRef, { tailoredResume: newResume }, { merge: true });
+    } catch (error: any) {
+      console.warn('Could not update resume in Firestore:', error?.message);
+      // Don't throw - allow the app to continue working even if Firestore fails
+    }
+  };
+
+  // Update critique in Firestore (creates document if it doesn't exist)
+  const handleCritiqueUpdate = async (critique: import('@/ai/schemas/resume-critique-schema').ResumeCritique) => {
+    console.log('Attempting to save critique to Firestore for application:', application.id);
+    try {
+      const docRef = doc(db, 'applications', application.id);
+      // Use setDoc with merge to create document if it doesn't exist
+      await setDoc(docRef, { resumeCritique: critique }, { merge: true });
+      console.log('✅ Critique saved successfully to Firestore');
+    } catch (error: any) {
+      console.error('❌ Failed to save critique to Firestore:', error?.message, error?.code);
+      // Don't throw - allow the app to continue working even if Firestore fails
+    }
+  };
+
+  const handleApply = () => {
+    if (application.jobUrl || application.applicationLink) {
+      window.open(application.jobUrl || application.applicationLink, '_blank');
+    } else {
+      toast({
+        title: 'No Application Link',
+        description: 'This job does not have an application URL.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Use the actual tailored resume if it exists, otherwise fallback to the first base resume
+  const initialResumeContent = application.tailoredResume || personalInfo.resumeSummaries?.[0]?.content || '';
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -591,139 +641,181 @@ function ApplicationDetailDialog({ application }: { application: SavedApplicatio
           <FileText className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl">
+      <DialogContent className="max-w-[95vw] h-[95vh] flex flex-col">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{application.jobTitle}</DialogTitle>
-            {application.jobDescription && (
-              <JobDescriptionDialog
-                jobDescription={application.jobDescription}
-                jobTitle={application.jobTitle || 'Untitled Job'}
-              />
-            )}
+          <div className="flex items-center justify-between gap-4">
+            <DialogTitle className="flex-1">{application.jobTitle}</DialogTitle>
+            <div className="flex items-center gap-2">
+              <Tabs defaultValue="resume" className="w-auto">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="resume">Resume</TabsTrigger>
+                  <TabsTrigger value="cover">Cover</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              {(application.jobUrl || application.applicationLink) && (
+                <Button size="sm" variant="default" onClick={handleApply}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Apply
+                </Button>
+              )}
+            </div>
           </div>
         </DialogHeader>
-        <div className="space-y-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <DocumentDisplayDialog
-              title="Tailored Resume"
-              content={application.tailoredResume}
-              onDownload={() => handleDownloadWord(application.tailoredResume, `${application.jobTitle}-Resume`, 'resume')}
+        <Tabs defaultValue="resume" className="flex-1 flex flex-col overflow-hidden">
+          <TabsContent value="resume" className="flex-1 mt-4 overflow-hidden">
+            <EnhancedResumeDialog
+              key={application.id} // Force remount when switching applications to reset internal state
+              applicationId={application.id}
+              resume={initialResumeContent}
+              jobDescription={application.jobDescription}
+              matchingScore={application.matchingScore}
+              matchingSkills={application.matchingSkills || []}
+              lackingSkills={application.lackingSkills || []}
+              initialCritique={application.resumeCritique}
+              onResumeUpdate={handleResumeUpdate}
+              onCritiqueUpdate={handleCritiqueUpdate}
             />
-            <DocumentDisplayDialog
-              title="Cover Letter"
-              content={application.coverLetter}
-              onDownload={() => handleDownloadWord(application.coverLetter, `${application.jobTitle}-CoverLetter`, 'cover-letter')}
-            />
-          </div>
-        </div>
-        <div className="flex-shrink-0 pt-4 border-t">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Fit Analysis</CardTitle>
-              {application.jobDescription && (
-                <JobDescriptionDialog
-                  jobDescription={application.jobDescription}
-                  jobTitle={application.jobTitle || 'Untitled Job'}
-                />
-              )}
-            </CardHeader>
-            <CardContent className="flex flex-col md:flex-row items-center gap-6">
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative h-24 w-24">
-                  <svg className="h-full w-full" viewBox="0 0 36 36">
-                    <path className="text-muted/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
-                    <path className="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={`${application.matchingScore}, 100`} />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">{application.matchingScore}%</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-primary">Match Score</p>
+          </TabsContent>
+          <TabsContent value="cover" className="flex-1 mt-4 overflow-hidden">
+            <div className="h-full border rounded-lg bg-card">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="font-semibold text-lg">Cover Letter</h3>
+                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleDownloadWord(application.coverLetter, `${application.jobTitle}-CoverLetter`, 'cover-letter'); }}>
+                  <Download className="mr-2 h-4 w-4" /> AI-Enhanced DOCX
+                </Button>
               </div>
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                <div>
-                  <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><CheckCircle className="h-4 w-4 text-green-500" /> Matching Skills</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {application.matchingSkills?.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
-                  </div>
+              <ScrollArea className="h-[calc(100%-4rem)]">
+                <div className="p-8">
+                  <EnhancedDocumentDisplay
+                    content={application.coverLetter}
+                    documentType="cover-letter"
+                  />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><ShieldOff className="h-4 w-4 text-amber-500" /> Lacking Skills</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {application.lackingSkills?.map(skill => <Badge key={skill} variant="outline">{skill}</Badge>)}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </ScrollArea>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
 }
 
+
 function ApplicationTrackerPage() {
   const { user } = useAuth();
   const { personalInfo, updatePersonalInfo, saving } = useSimplePortfolio();
   const { toast } = useToast();
-  const [baseResumes, setBaseResumes] = useState(() => {
-    // Initialize with at least one resume
-    const resumes = personalInfo.resumeSummaries || [];
-    if (resumes.length === 0) {
-      return [{
-        id: 'resume-1',
-        title: 'Resume 1',
-        content: ''
-      }];
-    }
-    return resumes;
+
+  // --- Positions (must be declared before baseResumes) ---
+  const [positions, setPositions] = useState<TargetPosition[]>(() => {
+    const saved = (personalInfo as any).targetPositions as TargetPosition[] | undefined;
+    return saved && saved.length > 0 ? saved : [{ id: 'pos-1', title: 'Default' }];
+  });
+  const [selectedPositionId, setSelectedPositionId] = useState<string>(() => {
+    const saved = (personalInfo as any).targetPositions as TargetPosition[] | undefined;
+    return saved && saved.length > 0 ? saved[0].id : 'pos-1';
   });
 
-  // Update baseResumes when personalInfo changes (when data loads from Firebase)
   useEffect(() => {
-    if (personalInfo.resumeSummaries && personalInfo.resumeSummaries.length > 0) {
-      console.log('📥 Updating baseResumes from personalInfo:', personalInfo.resumeSummaries);
-      setBaseResumes(personalInfo.resumeSummaries);
+    const saved = (personalInfo as any).targetPositions as TargetPosition[] | undefined;
+    if (saved && saved.length > 0) {
+      setPositions(saved);
+      setSelectedPositionId(prev => saved.find(p => p.id === prev) ? prev : saved[0].id);
     }
-  }, [personalInfo.resumeSummaries]);
+  }, [(personalInfo as any).targetPositions]);
+
+  // Helper: resumes for a given position (no closure over positions state)
+  const getResumesForPosition = (posId: string, info: typeof personalInfo, firstPosId: string): { id: string; title: string; content: string }[] => {
+    const posResumes = (info as any).positionResumes as Record<string, { id: string; title: string; content: string }[]> | undefined;
+    if (posResumes && posResumes[posId] && posResumes[posId].length > 0) return [posResumes[posId][0]]; // always 1
+    // Fallback: legacy resumeSummaries belong to first position only
+    if (posId === firstPosId) {
+      const legacy = info.resumeSummaries || [];
+      if (legacy.length > 0) return [legacy[0]]; // always 1
+    }
+    return [{ id: `resume-${posId}`, title: 'Base Resume', content: '' }];
+  };
+
+  const [baseResumes, setBaseResumes] = useState(() => {
+    const saved = (personalInfo as any).targetPositions as TargetPosition[] | undefined;
+    const firstPosId = saved && saved.length > 0 ? saved[0].id : 'pos-1';
+    return getResumesForPosition(firstPosId, personalInfo, firstPosId);
+  });
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [history, setHistory] = useState<SavedApplication[]>([]);
-  const [marketSkills, setMarketSkills] = useState<SkillAnalysis | null>(null);
+  const [marketSkillsMap, setMarketSkillsMap] = useState<Map<string, SkillAnalysis>>(() => {
+    const stored = (personalInfo as any).marketSkillsData as Record<string, SkillAnalysis> | undefined;
+    return stored ? new Map(Object.entries(stored)) : new Map();
+  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isBaseResumesOpen, setIsBaseResumesOpen] = useState(false); // Added state
+  const [isBaseResumesOpen, setIsBaseResumesOpen] = useState(false);
+
+  const marketSkills = marketSkillsMap.get(selectedPositionId) ?? null;
+
+  // Sync when personalInfo loads from Firebase
+  useEffect(() => {
+    setBaseResumes(getResumesForPosition(selectedPositionId, personalInfo, positions[0]?.id ?? 'pos-1'));
+    // Load persisted market skills for each position
+    const stored = (personalInfo as any).marketSkillsData as Record<string, SkillAnalysis> | undefined;
+    if (stored) {
+      setMarketSkillsMap(new Map(Object.entries(stored)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(personalInfo as any).positionResumes, personalInfo.resumeSummaries, (personalInfo as any).marketSkillsData]);
+
+  const savePositions = async (updated: TargetPosition[]) => {
+    try {
+      await updatePersonalInfo({ ...personalInfo, targetPositions: updated } as any);
+    } catch { /* silent */ }
+  };
+
+  const addPosition = () => {
+    const newPos: TargetPosition = { id: `pos-${Date.now()}`, title: 'New Position' };
+    const updated = [...positions, newPos];
+    setPositions(updated);
+    setSelectedPositionId(newPos.id);
+    savePositions(updated);
+  };
+
+  const updatePositionTitle = (id: string, title: string) => {
+    const updated = positions.map(p => p.id === id ? { ...p, title } : p);
+    setPositions(updated);
+  };
+
+  const commitPositionTitle = (id: string, title: string) => {
+    const updated = positions.map(p => p.id === id ? { ...p, title } : p);
+    setPositions(updated);
+    savePositions(updated);
+  };
+
+  const removePosition = (id: string) => {
+    if (positions.length <= 1) return;
+    const updated = positions.filter(p => p.id !== id);
+    setPositions(updated);
+    setSelectedPositionId(updated[0].id);
+    savePositions(updated);
+  };
+
+  // When the active position changes, reload its resumes
+  useEffect(() => {
+    setBaseResumes(getResumesForPosition(selectedPositionId, personalInfo, positions[0]?.id ?? 'pos-1'));
+    setIsAnalyzing(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPositionId]);
+
   const uniqueId = useId();
 
-  // Save resumes to database
+  // Save resumes per-position
   const saveResumes = async () => {
     try {
-      console.log('💾 Saving resumes to database...', {
-        baseResumes,
-        personalInfoBefore: personalInfo,
-        user: user?.email
-      });
-
-      // Create updated personal info with new resume summaries
-      const updatedPersonalInfo = {
-        ...personalInfo,
-        resumeSummaries: baseResumes
-      };
-
-      console.log('📤 Updating personal info with resumes...', updatedPersonalInfo);
-      await updatePersonalInfo(updatedPersonalInfo);
-
-      console.log('✅ Resumes saved successfully');
-      toast({
-        title: "Resumes Saved",
-        description: "Your base resumes have been saved successfully.",
-      });
+      const existing = (personalInfo as any).positionResumes as Record<string, any> || {};
+      const updated = { ...existing, [selectedPositionId]: baseResumes };
+      await updatePersonalInfo({ ...personalInfo, positionResumes: updated } as any);
+      toast({ title: "Resumes Saved", description: "Your base resumes have been saved successfully." });
     } catch (error) {
       console.error('❌ Failed to save resumes:', error);
-      toast({
-        title: "Save Failed",
-        description: error instanceof Error ? error.message : "Failed to save resumes. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Save Failed", description: error instanceof Error ? error.message : "Failed to save resumes.", variant: "destructive" });
     }
   };
 
@@ -743,10 +835,7 @@ function ApplicationTrackerPage() {
         content: ''
       };
       setBaseResumes(prev => [...prev, newResume]);
-      toast({
-        title: "New Resume Added",
-        description: "A new base resume has been added.",
-      });
+      toast({ title: "New Resume Added", description: "A new base resume has been added." });
     }
   };
 
@@ -760,42 +849,42 @@ function ApplicationTrackerPage() {
     return () => unsubscribe();
   }, [user]);
 
+  // Market skills analysis — only runs when explicitly triggered (no auto-run useEffect)
   const analyzeMarketSkills = async () => {
-    if (history.length > 0) {
-      setIsAnalyzing(true);
-      try {
-        const jobDescriptions = history.map(app => app.jobDescription);
-        // Pass base resume content for gap analysis
-        const userResume = baseResumes[0]?.content || '';
-
-        // Use Server Action
-        // @ts-ignore - The schema update might not be picked up by TS server instantly
-        const result = await analyzeSkillsAction({ jobDescriptions, userResume });
-
-        if (result.success && result.data) {
-          setMarketSkills(result.data);
-        } else {
-          throw new Error(result.error || 'Unknown error during skills analysis');
-        }
-      } catch (error) {
-        console.error("Failed to analyze market skills:", error);
-        toast({
-          title: "Skills Analysis Failed",
-          description: "Could not analyze job description history.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsAnalyzing(false);
+    const posHistory = history.filter(item =>
+      item.positionId === selectedPositionId || (!item.positionId && selectedPositionId === positions[0]?.id)
+    );
+    if (posHistory.length === 0) {
+      toast({ title: "No history yet", description: "Add job applications to this position first.", variant: "destructive" });
+      return;
+    }
+    setIsAnalyzing(true);
+    try {
+      const jobDescriptions = posHistory.map(app => app.jobDescription);
+      const userResume = baseResumes[0]?.content || '';
+      // @ts-ignore
+      const result = await analyzeSkillsAction({ jobDescriptions, userResume });
+      if (result.success && result.data) {
+        const newMap = new Map(marketSkillsMap).set(selectedPositionId, result.data!);
+        setMarketSkillsMap(newMap);
+        // Persist to Firebase
+        const stored = (personalInfo as any).marketSkillsData as Record<string, SkillAnalysis> | undefined || {};
+        const updatedStore = { ...stored, [selectedPositionId]: result.data };
+        await updatePersonalInfo({ ...personalInfo, marketSkillsData: updatedStore } as any);
+        toast({ title: "Analysis updated!", description: "Market skills analysis has been saved." });
+      } else {
+        throw new Error(result.error || 'Unknown error during skills analysis');
       }
+    } catch (error) {
+      console.error("Failed to analyze market skills:", error);
+      toast({ title: "Skills Analysis Failed", description: "Could not analyze job description history.", variant: "destructive" });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
-  useEffect(() => {
-    analyzeMarketSkills();
-  }, [history, baseResumes]); // Re-run when history or resume changes
-
   const addApplication = () => {
-    setApplications(prev => [...prev, { id: `app-${uniqueId}-${prev.length}`, jobDescription: '', applicationLink: '', language: 'French', selectedResumeId: baseResumes[0].id, isLoading: false }]);
+    setApplications(prev => [...prev, { id: `app-${uniqueId}-${prev.length}`, jobDescription: '', applicationLink: '', language: 'French', selectedResumeId: baseResumes[0].id, isLoading: false, positionId: selectedPositionId }]);
   };
 
   const removeApplication = (id: string) => {
@@ -896,12 +985,13 @@ function ApplicationTrackerPage() {
           jobTitle: aiData.jobTitle,
           jobDescription: application.jobDescription,
           applicationLink: application.applicationLink || '',
-          tailoredResume: aiData.resume, // Schema returns 'resume', not 'tailoredResume'
+          tailoredResume: aiData.resume,
           coverLetter: aiData.coverLetter,
           language: application.language,
           matchingScore: aiData.matchingScore,
           matchingSkills: aiData.matchingSkills,
           lackingSkills: aiData.lackingSkills,
+          positionId: selectedPositionId,
           createdAt: serverTimestamp(),
         });
       }
@@ -935,431 +1025,427 @@ function ApplicationTrackerPage() {
           Tailor your resume and generate cover letters for any job in seconds.
         </p>
 
-        <Tabs defaultValue="tracker" className="w-full space-y-6">
-          <div className="flex justify-center mb-8">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
-              <TabsTrigger value="tracker">Application Tracker</TabsTrigger>
-              <TabsTrigger value="search">Find Jobs</TabsTrigger>
-            </TabsList>
+        <div className="w-full space-y-6">
+
+          {/* ── Position Selector ── */}
+          <div className="mb-2">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Targeted Position</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {positions.map(pos => (
+                <div key={pos.id} className={`flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium transition-all cursor-pointer ${selectedPositionId === pos.id
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                  : 'bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+                  }`}
+                  onClick={() => setSelectedPositionId(pos.id)}
+                >
+                  {selectedPositionId === pos.id ? (
+                    <input
+                      className="bg-transparent outline-none w-28 text-center text-sm font-medium"
+                      value={pos.title}
+                      onChange={e => updatePositionTitle(pos.id, e.target.value)}
+                      onBlur={e => commitPositionTitle(pos.id, e.target.value)}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  ) : (
+                    <span>{pos.title}</span>
+                  )}
+                  {positions.length > 1 && selectedPositionId === pos.id && (
+                    <button
+                      className="ml-1 rounded-full hover:bg-white/20 p-0.5 transition-colors"
+                      onClick={e => { e.stopPropagation(); removePosition(pos.id); }}
+                    >✕</button>
+                  )}
+                </div>
+              ))}
+              {positions.length < 8 && (
+                <button
+                  onClick={addPosition}
+                  className="flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  <PlusCircle className="h-4 w-4" /> Add Position
+                </button>
+              )}
+            </div>
           </div>
 
-          <TabsContent value="tracker">
-            <Card className="mb-8">
-              <CardHeader
-                className="cursor-pointer flex flex-row items-center justify-between space-y-0 pb-2"
-                onClick={() => setIsBaseResumesOpen(!isBaseResumesOpen)}
-              >
-                <CardTitle>Your Base Resumes</CardTitle>
-                <Button variant="ghost" size="sm" className="w-9 p-0">
-                  {isBaseResumesOpen ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">Toggle base resumes</span>
-                </Button>
-              </CardHeader>
-              {isBaseResumesOpen && (
-                <CardContent>
-                  <Tabs defaultValue={baseResumes[0]?.id || 'resume-1'} className="w-full">
-                    <div className="flex items-center gap-2">
-                      <TabsList>
-                        {baseResumes.map(resume => (
-                          <TabsTrigger key={resume.id} value={resume.id}>
-                            <Input
-                              value={resume.title}
-                              onChange={(e) => handleResumeTitleChange(resume.id, e.target.value)}
-                              className="border-none focus-visible:ring-0 text-center bg-transparent h-auto p-0"
-                            />
-                          </TabsTrigger>
-                        ))}
-                      </TabsList>
-                      {baseResumes.length < 3 && (
-                        <Button variant="ghost" size="icon" onClick={addBaseResume}>
-                          <PlusCircle className="h-5 w-5" />
-                        </Button>
-                      )}
-                    </div>
-                    {baseResumes.map(resume => (
-                      <TabsContent key={resume.id} value={resume.id} className="mt-4">
-                        <Textarea
-                          value={resume.content}
-                          onChange={(e) => handleResumeContentChange(resume.id, e.target.value)}
-                          placeholder={`Paste the content for your "${resume.title}" resume here...`}
-                          rows={10}
-                          className="text-sm"
-                        />
-                      </TabsContent>
-                    ))}
-                  </Tabs>
-                  <div className="flex justify-end pt-4 border-t">
-                    <Button onClick={saveResumes} disabled={saving} className="flex items-center gap-2">
-                      {saving ? (
-                        <Loader className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
-                      )}
-                      {saving ? 'Saving...' : 'Save Resumes'}
-                    </Button>
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+          <Card className="mb-8">
+            <CardHeader
+              className="cursor-pointer flex flex-row items-center justify-between space-y-0 pb-2"
+              onClick={() => setIsBaseResumesOpen(!isBaseResumesOpen)}
+            >
+              <CardTitle>Your Base Resumes</CardTitle>
+              <Button variant="ghost" size="sm" className="w-9 p-0">
+                {isBaseResumesOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle base resumes</span>
+              </Button>
+            </CardHeader>
+            {isBaseResumesOpen && (
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block uppercase tracking-wider">Resume Title</label>
+                  <Input
+                    value={baseResumes[0]?.title ?? ''}
+                    onChange={(e) => handleResumeTitleChange(baseResumes[0]?.id ?? 'resume-1', e.target.value)}
+                    placeholder="e.g. Full Stack Resume"
+                    className="max-w-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block uppercase tracking-wider">Resume Content</label>
+                  <Textarea
+                    value={baseResumes[0]?.content ?? ''}
+                    onChange={(e) => handleResumeContentChange(baseResumes[0]?.id ?? 'resume-1', e.target.value)}
+                    placeholder={`Paste your resume content for the "${positions.find(p => p.id === selectedPositionId)?.title}" position here...`}
+                    rows={12}
+                    className="text-sm font-mono"
+                  />
+                </div>
+                <div className="flex justify-end pt-2 border-t">
+                  <Button onClick={saveResumes} disabled={saving} className="flex items-center gap-2">
+                    {saving ? <Loader className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {saving ? 'Saving...' : 'Save Resume'}
+                  </Button>
+                </div>
+              </CardContent>
+            )}
+          </Card>
 
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-primary">Job Applications</h2>
-              {applications.map((app, index) => (
-                <Card key={app.id} className="overflow-hidden">
-                  <div className="p-6 space-y-4">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-primary">Job Applications
+              <span className="ml-2 text-base font-normal text-muted-foreground">— {positions.find(p => p.id === selectedPositionId)?.title}</span>
+            </h2>
+            {applications.filter(a => (a as any).positionId === selectedPositionId || (!(a as any).positionId && selectedPositionId === positions[0]?.id)).map((app, index) => (
+              <Card key={app.id} className="overflow-hidden">
+                <div className="p-6 space-y-4">
+                  <div>
+                    <label htmlFor={`job-desc-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
+                      Job Description #{index + 1}
+                    </label>
+                    <Textarea
+                      id={`job-desc-${app.id}`}
+                      value={app.jobDescription}
+                      onChange={(e) => handleInputChange(app.id, 'jobDescription', e.target.value)}
+                      placeholder="Paste the job description here..."
+                      rows={6}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor={`job-desc-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
-                        Job Description #{index + 1}
+                      <label htmlFor={`apply-link-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
+                        Application Link (Optional)
                       </label>
-                      <Textarea
-                        id={`job-desc-${app.id}`}
-                        value={app.jobDescription}
-                        onChange={(e) => handleInputChange(app.id, 'jobDescription', e.target.value)}
-                        placeholder="Paste the job description here..."
-                        rows={6}
+                      <Input
+                        id={`apply-link-${app.id}`}
+                        value={app.applicationLink}
+                        onChange={(e) => handleInputChange(app.id, 'applicationLink', e.target.value)}
+                        placeholder="https://www.linkedin.com/jobs/view/..."
                       />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor={`apply-link-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
-                          Application Link (Optional)
-                        </label>
-                        <Input
-                          id={`apply-link-${app.id}`}
-                          value={app.applicationLink}
-                          onChange={(e) => handleInputChange(app.id, 'applicationLink', e.target.value)}
-                          placeholder="https://www.linkedin.com/jobs/view/..."
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor={`resume-select-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
-                          Base Resume to Use
-                        </label>
-                        <Select value={app.selectedResumeId} onValueChange={(value) => handleResumeSelectionChange(app.id, value)}>
-                          <SelectTrigger id={`resume-select-${app.id}`}>
-                            <SelectValue placeholder="Select a base resume" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {baseResumes.map(resume => (
-                              <SelectItem key={resume.id} value={resume.id}>{resume.title}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div>
+                      <label htmlFor={`resume-select-${app.id}`} className="text-sm font-medium text-muted-foreground mb-2 block">
+                        Base Resume to Use
+                      </label>
+                      <Select value={app.selectedResumeId} onValueChange={(value) => handleResumeSelectionChange(app.id, value)}>
+                        <SelectTrigger id={`resume-select-${app.id}`}>
+                          <SelectValue placeholder="Select a base resume" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {baseResumes.map(resume => (
+                            <SelectItem key={resume.id} value={resume.id}>{resume.title}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
+                  </div>
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4">
-                        <Button onClick={() => handleGenerate(app.id)} disabled={app.isLoading}>
-                          {app.isLoading ? (
-                            <><Loader className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-                          ) : (
-                            <><Wand2 className="mr-2 h-4 w-4" /> Generate Tailored Content</>
-                          )}
-                        </Button>
-                        <div className="flex items-center space-x-2">
-                          <Label htmlFor={`lang-switch-${app.id}`} className={app.language === 'English' ? 'text-muted-foreground' : 'text-primary'}>FR</Label>
-                          <Switch
-                            id={`lang-switch-${app.id}`}
-                            checked={app.language === 'English'}
-                            onCheckedChange={(checked) => handleLanguageChange(app.id, checked ? 'English' : 'French')}
-                          />
-                          <Label htmlFor={`lang-switch-${app.id}`} className={app.language === 'French' ? 'text-muted-foreground' : 'text-primary'}>EN</Label>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => removeApplication(app.id)}>
-                        <Trash2 className="h-5 w-5 text-destructive" />
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <Button onClick={() => handleGenerate(app.id)} disabled={app.isLoading}>
+                        {app.isLoading ? (
+                          <><Loader className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                        ) : (
+                          <><Wand2 className="mr-2 h-4 w-4" /> Generate Tailored Content</>
+                        )}
                       </Button>
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor={`lang-switch-${app.id}`} className={app.language === 'English' ? 'text-muted-foreground' : 'text-primary'}>FR</Label>
+                        <Switch
+                          id={`lang-switch-${app.id}`}
+                          checked={app.language === 'English'}
+                          onCheckedChange={(checked) => handleLanguageChange(app.id, checked ? 'English' : 'French')}
+                        />
+                        <Label htmlFor={`lang-switch-${app.id}`} className={app.language === 'French' ? 'text-muted-foreground' : 'text-primary'}>EN</Label>
+                      </div>
                     </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeApplication(app.id)}>
+                      <Trash2 className="h-5 w-5 text-destructive" />
+                    </Button>
                   </div>
-                  {(app.tailoredResume || app.coverLetter) && (
-                    <Accordion type="single" collapsible className="w-full bg-secondary/30">
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger className="px-6 text-primary font-semibold">
-                          {app.jobTitle ? `View Generated Content for: ${app.jobTitle}` : 'View Generated Content'}
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pt-2 pb-6 space-y-6">
-                          {typeof app.matchingScore === 'number' && (
-                            <Card>
-                              <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle className="text-lg">Fit Analysis</CardTitle>
-                                {app.jobDescription && (
-                                  <JobDescriptionDialog jobDescription={app.jobDescription} jobTitle={app.jobTitle || 'Untitled Job'} />
-                                )}
-                              </CardHeader>
-                              <CardContent className="flex flex-col md:flex-row items-center gap-6">
-                                <div className="flex flex-col items-center gap-2">
-                                  <div className="relative h-24 w-24">
-                                    <svg className="h-full w-full" viewBox="0 0 36 36">
-                                      <path className="text-muted/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
-                                      <path className="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={`${app.matchingScore}, 100`} />
-                                    </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                      <span className="text-2xl font-bold text-primary">{app.matchingScore}%</span>
-                                    </div>
-                                  </div>
-                                  <p className="text-sm font-medium text-primary">Match Score</p>
-                                </div>
-                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                                  <div>
-                                    <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><CheckCircle className="h-4 w-4 text-green-500" /> Matching Skills</h4>
-                                    <div className="flex flex-wrap gap-1">
-                                      {app.matchingSkills?.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><ShieldOff className="h-4 w-4 text-amber-500" /> Lacking Skills</h4>
-                                    <div className="flex flex-wrap gap-1">
-                                      {app.lackingSkills?.map(skill => <Badge key={skill} variant="outline">{skill}</Badge>)}
-                                    </div>
+                </div>
+                {(app.tailoredResume || app.coverLetter) && (
+                  <Accordion type="single" collapsible className="w-full bg-secondary/30">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="px-6 text-primary font-semibold">
+                        {app.jobTitle ? `View Generated Content for: ${app.jobTitle}` : 'View Generated Content'}
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pt-2 pb-6 space-y-6">
+                        {typeof app.matchingScore === 'number' && (
+                          <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                              <CardTitle className="text-lg">Fit Analysis</CardTitle>
+                              {app.jobDescription && (
+                                <JobDescriptionDialog jobDescription={app.jobDescription} jobTitle={app.jobTitle || 'Untitled Job'} />
+                              )}
+                            </CardHeader>
+                            <CardContent className="flex flex-col md:flex-row items-center gap-6">
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="relative h-24 w-24">
+                                  <svg className="h-full w-full" viewBox="0 0 36 36">
+                                    <path className="text-muted/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
+                                    <path className="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={`${app.matchingScore}, 100`} />
+                                  </svg>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-primary">{app.matchingScore}%</span>
                                   </div>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                          {app.tailoredResume && (
-                            <div>
-                              <h3 className="text-lg font-semibold mb-2 text-primary">Tailored Resume</h3>
-                              <div className="p-4 bg-background rounded-md border whitespace-pre-wrap text-sm font-mono">{app.tailoredResume}</div>
-                            </div>
-                          )}
-                          {app.coverLetter && (
-                            <div>
-                              <h3 className="text-lg font-semibold mb-2 text-primary">Cover Letter</h3>
-                              <div className="p-4 bg-background rounded-md border whitespace-pre-wrap text-sm font-mono">{app.coverLetter}</div>
-                            </div>
-                          )}
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  )}
-                </Card>
-              ))}
-              <Button variant="outline" onClick={addApplication} className="w-full">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Application
-              </Button>
-            </div>
-
-            <div className="mt-16">
-              <h2 className="text-2xl font-bold text-primary mb-4">Application History</h2>
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Job Title</TableHead>
-                        <TableHead>Company</TableHead>
-                        <TableHead>Match Score</TableHead>
-                        <TableHead>Language</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Applied</TableHead>
-                        <TableHead className="w-0 p-0 text-right"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {history.length > 0 ? (() => {
-                        // Sort: non-applied first, then applied
-                        const notApplied = history.filter(item => !item.applied);
-                        const applied = history.filter(item => item.applied);
-
-                        return (
-                          <>
-                            {notApplied.map(item => (
-                              <TableRow key={item.id} className="group">
-                                <TableCell className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground" /> {item.jobTitle}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm">{item.company || 'N/A'}</span>
+                                <p className="text-sm font-medium text-primary">Match Score</p>
+                              </div>
+                              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                                <div>
+                                  <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><CheckCircle className="h-4 w-4 text-green-500" /> Matching Skills</h4>
+                                  <div className="flex flex-wrap gap-1">
+                                    {app.matchingSkills?.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Progress value={item.matchingScore} className="h-2 w-20" />
-                                    <span>{item.matchingScore}%</span>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><ShieldOff className="h-4 w-4 text-amber-500" /> Lacking Skills</h4>
+                                  <div className="flex flex-wrap gap-1">
+                                    {app.lackingSkills?.map(skill => <Badge key={skill} variant="outline">{skill}</Badge>)}
                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Languages className="h-4 w-4 text-muted-foreground" /> {item.language}
-                                  </div>
-                                </TableCell>
-                                <TableCell>{item.createdAt ? format(new Date((item.createdAt as any).seconds * 1000), 'MMM d, yyyy') : 'N/A'}</TableCell>
-                                <TableCell>
-                                  <Switch
-                                    checked={item.applied || false}
-                                    onCheckedChange={() => handleToggleApplied(item.id, item.applied || false)}
-                                  />
-                                </TableCell>
-                                <TableCell className="p-2 text-right">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-1">
-                                    <ApplicationDetailDialog application={item} />
-                                    {item.applicationLink && (
-                                      <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                                        <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
-                                          <ExternalLink className="h-4 w-4" />
-                                        </a>
-                                      </Button>
-                                    )}
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-
-                            {applied.length > 0 && notApplied.length > 0 && (
-                              <TableRow>
-                                <TableCell colSpan={7} className="bg-muted/30 text-center py-2 text-sm text-muted-foreground font-medium">
-                                  Applied Applications
-                                </TableCell>
-                              </TableRow>
-                            )}
-
-                            {applied.map(item => (
-                              <TableRow key={item.id} className="group opacity-60">
-                                <TableCell className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground" /> {item.jobTitle}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm">{item.company || 'N/A'}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Progress value={item.matchingScore} className="h-2 w-20" />
-                                    <span>{item.matchingScore}%</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Languages className="h-4 w-4 text-muted-foreground" /> {item.language}
-                                  </div>
-                                </TableCell>
-                                <TableCell>{item.createdAt ? format(new Date((item.createdAt as any).seconds * 1000), 'MMM d, yyyy') : 'N/A'}</TableCell>
-                                <TableCell>
-                                  <Switch
-                                    checked={item.applied || false}
-                                    onCheckedChange={() => handleToggleApplied(item.id, item.applied || false)}
-                                  />
-                                </TableCell>
-                                <TableCell className="p-2 text-right">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-1">
-                                    <ApplicationDetailDialog application={item} />
-                                    {item.applicationLink && (
-                                      <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                                        <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
-                                          <ExternalLink className="h-4 w-4" />
-                                        </a>
-                                      </Button>
-                                    )}
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </>
-                        );
-                      })() : (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground h-24">
-                            No application history yet. Generate content to see it here.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                        {app.tailoredResume && (
+                          <div>
+                            <h3 className="text-lg font-semibold mb-2 text-primary">Tailored Resume</h3>
+                            <div className="p-4 bg-background rounded-md border whitespace-pre-wrap text-sm font-mono">{app.tailoredResume}</div>
+                          </div>
+                        )}
+                        {app.coverLetter && (
+                          <div>
+                            <h3 className="text-lg font-semibold mb-2 text-primary">Cover Letter</h3>
+                            <div className="p-4 bg-background rounded-md border whitespace-pre-wrap text-sm font-mono">{app.coverLetter}</div>
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                )}
               </Card>
-            </div>
+            ))}
+            <Button variant="outline" onClick={addApplication} className="w-full">
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Application
+            </Button>
+          </div>
 
-            <div className="mt-16">
-              <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
-                <BrainCircuit className="h-7 w-7" />
-                Market Skills Analysis
-              </h2>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div className="space-y-1">
-                    <CardTitle>Top Required Skills</CardTitle>
-                    <p className="text-muted-foreground text-sm">
-                      Based on the {history.length} job description(s) you've saved.
-                    </p>
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-primary mb-4">Application History
+              <span className="ml-2 text-base font-normal text-muted-foreground">— {positions.find(p => p.id === selectedPositionId)?.title}</span>
+            </h2>
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Job Title</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Match Score</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Applied</TableHead>
+                      <TableHead className="w-0 p-0 text-right"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(() => {
+                      const posFiltered = history.filter(item => item.positionId === selectedPositionId || (!item.positionId && selectedPositionId === positions[0]?.id));
+                      if (posFiltered.length === 0) return (
+                        <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground h-24">No applications for this position yet.</TableCell></TableRow>
+                      );
+                      // Sort: non-applied first, then applied
+                      const notApplied = posFiltered.filter(item => !item.applied);
+                      const applied = posFiltered.filter(item => item.applied);
+
+                      return (
+                        <>
+                          {notApplied.map(item => (
+                            <TableRow key={item.id} className="group">
+                              <TableCell className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground" /> {item.jobTitle}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">{item.company || 'N/A'}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Progress value={item.matchingScore} className="h-2 w-20" />
+                                  <span>{item.matchingScore}%</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{item.createdAt ? format(new Date((item.createdAt as any).seconds * 1000), 'MMM d, yyyy') : 'N/A'}</TableCell>
+                              <TableCell>
+                                <Switch
+                                  checked={item.applied || false}
+                                  onCheckedChange={() => handleToggleApplied(item.id, item.applied || false)}
+                                />
+                              </TableCell>
+                              <TableCell className="p-2 text-right">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-1">
+                                  <ApplicationDetailDialog application={item} />
+                                  {item.applicationLink && (
+                                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                                      <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-4 w-4" />
+                                      </a>
+                                    </Button>
+                                  )}
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+
+                          {applied.length > 0 && notApplied.length > 0 && (
+                            <TableRow>
+                              <TableCell colSpan={6} className="bg-muted/30 text-center py-2 text-sm text-muted-foreground font-medium">
+                                Applied Applications
+                              </TableCell>
+                            </TableRow>
+                          )}
+
+                          {applied.map(item => (
+                            <TableRow key={item.id} className="group opacity-60">
+                              <TableCell className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground" /> {item.jobTitle}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">{item.company || 'N/A'}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Progress value={item.matchingScore} className="h-2 w-20" />
+                                  <span>{item.matchingScore}%</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{item.createdAt ? format(new Date((item.createdAt as any).seconds * 1000), 'MMM d, yyyy') : 'N/A'}</TableCell>
+                              <TableCell>
+                                <Switch
+                                  checked={item.applied || false}
+                                  onCheckedChange={() => handleToggleApplied(item.id, item.applied || false)}
+                                />
+                              </TableCell>
+                              <TableCell className="p-2 text-right">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center space-x-1">
+                                  <ApplicationDetailDialog application={item} />
+                                  {item.applicationLink && (
+                                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                                      <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-4 w-4" />
+                                      </a>
+                                    </Button>
+                                  )}
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. This will permanently delete the application for "{item.jobTitle}".
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteHistoryItem(item.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </>
+                      );
+                    })()}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
+              <BrainCircuit className="h-7 w-7" />
+              Market Skills Analysis
+            </h2>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="space-y-1">
+                  <CardTitle>Top Required Skills</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    Based on the {history.length} job description(s) you've saved.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={analyzeMarketSkills} disabled={isAnalyzing || history.length === 0}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {isAnalyzing ? (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader className="h-4 w-4 animate-spin" />
+                    <span>Analyzing job descriptions...</span>
                   </div>
-                  <Button variant="outline" size="sm" onClick={analyzeMarketSkills} disabled={isAnalyzing || history.length === 0}>
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
-                    Refresh
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {isAnalyzing ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader className="h-4 w-4 animate-spin" />
-                      <span>Analyzing job descriptions...</span>
-                    </div>
-                  ) : marketSkills ? (
-                    <SkillsAnalysisDisplay marketSkills={marketSkills} />
-                  ) : (
-                    <p className="text-muted-foreground text-sm">
-                      No skills data to display. Add job descriptions to start the analysis.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="search">
-            <div className="max-w-7xl mx-auto">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border mb-6">
-                <h2 className="text-2xl font-semibold text-primary mb-2">Find Your Next Role</h2>
-                <p className="text-muted-foreground">
-                  Search through thousands of live job postings using Adzuna. Filter by location, keywords, and recency to find the perfect match for your tailored resume.
-                </p>
-              </div>
-              <JobSearch />
-            </div>
-          </TabsContent>
-        </Tabs>
+                ) : marketSkills ? (
+                  <SkillsAnalysisDisplay marketSkills={marketSkills} />
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    No skills data to display. Add job descriptions to start the analysis.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </main>
       <Footer />
     </div>

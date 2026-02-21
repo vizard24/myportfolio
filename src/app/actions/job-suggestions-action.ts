@@ -36,7 +36,7 @@ ${input.resume}
 Provide job title suggestions that will help them find the most relevant opportunities.`;
 
         const result = await ai.generate({
-            model: 'googleai/gemini-2.0-flash-exp',
+            model: 'googleai/gemini-2.5-flash',
             prompt,
             output: {
                 schema: JobTitleSuggestionsOutputSchema,
