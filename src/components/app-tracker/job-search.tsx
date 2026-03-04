@@ -194,7 +194,13 @@ export function JobSearch() {
             for (let i = 0; i < jobsToAnalyze.length; i += batchSize) {
                 const batch = jobsToAnalyze.slice(i, i + batchSize);
                 const results = await Promise.all(batch.map(job => calculateJobMatchAction(resume.content, job.description, job.title)));
-                batch.forEach((job, idx) => { if (results[idx].success && results[idx].data) newScores.set(job.id, results[idx].data!); });
+                batch.forEach((job, idx) => {
+                    if (results[idx].success && results[idx].data) {
+                        newScores.set(job.id, results[idx].data!);
+                    } else {
+                        console.warn(`[BestMatch] Failed for "${job.title}": ${results[idx].error || 'unknown error'} | desc length: ${job.description?.length ?? 0}`);
+                    }
+                });
             }
             setMatchScores(newScores);
             const remaining = jobs.length - newScores.size;
@@ -332,12 +338,9 @@ export function JobSearch() {
                 const selectedPos = positions.find(p => p.id === selectedPositionId);
                 const posTitle = selectedPos?.title ?? '';
 
-                // Split into relevant / other
                 const sortedJobs = sortByMatch
                     ? [...jobs].sort((a, b) => (matchScores.get(b.id)?.matchingScore ?? -1) - (matchScores.get(a.id)?.matchingScore ?? -1))
                     : jobs;
-                const relevantJobs = sortedJobs.filter(j => isRelevantToPosition(j.title, posTitle));
-                const otherJobs = sortedJobs.filter(j => !isRelevantToPosition(j.title, posTitle));
 
                 const renderCard = (job: Job) => (
                     <JobCard
@@ -351,9 +354,33 @@ export function JobSearch() {
                     />
                 );
 
+                // ── Best Match mode: single flat ranked list ──────────────────
+                if (sortByMatch) {
+                    const scored = sortedJobs.filter(j => matchScores.has(j.id));
+                    const unscored = sortedJobs.filter(j => !matchScores.has(j.id));
+                    return (
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="h-4 w-4 text-primary" />
+                                <span className="text-sm font-semibold text-primary">Best Match — ranked by fit</span>
+                                <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{jobs.length} jobs</span>
+                                <div className="flex-1 h-px bg-border" />
+                                <span className="text-xs text-muted-foreground">{scored.length} scored · {unscored.length} unscored</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {sortedJobs.map(renderCard)}
+                            </div>
+                        </div>
+                    );
+                }
+
+                // ── Default mode: relevance-split two sections ────────────────
+                const relevantJobs = sortedJobs.filter(j => isRelevantToPosition(j.title, posTitle));
+                const otherJobs = sortedJobs.filter(j => !isRelevantToPosition(j.title, posTitle));
+
                 return (
                     <div className="space-y-8">
-                        {/* ── Relevant section ── */}
+                        {/* Relevant section */}
                         <div>
                             <div className="flex items-center gap-3 mb-4">
                                 <span className="text-sm font-semibold text-primary">Relevant to &ldquo;{posTitle}&rdquo;</span>
@@ -371,7 +398,7 @@ export function JobSearch() {
                             )}
                         </div>
 
-                        {/* ── Other results section ── */}
+                        {/* Other results section */}
                         {otherJobs.length > 0 && (
                             <div>
                                 <div className="flex items-center gap-3 mb-4">

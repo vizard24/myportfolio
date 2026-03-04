@@ -49,6 +49,39 @@ service cloud.firestore {
       match /settings/{document} {
         allow read, write: if isAdmin() || isOwner(userId);
       }
+
+      // LinkedIn Data Chunks
+      match /linkedin_connections/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_messages/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_invitations/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_skills/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_projects/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_education/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_positions/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+      
+      match /linkedin_recommendations/{chunkId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
     }
     
     // ROOT-LEVEL APPLICATIONS - user can update their own

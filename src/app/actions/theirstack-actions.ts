@@ -2,28 +2,30 @@
 
 import type { Job, JobSearchFilters } from './adzuna-actions';
 
-// Country code mapping: Adzuna uses 'ca', TheirStack uses 'CA'
 function toAlpha2Upper(code: string): string {
     return (code || 'ca').toUpperCase();
 }
 
-interface TheirStackJob {
-    id: string | number;
-    job_title?: string;
-    company_name?: string;
-    company_object?: { name?: string; country_code?: string };
-    location?: string;
-    long_description?: string;
-    short_description?: string;
-    url?: string;
-    date_posted?: string;
-    salary_string?: string;
-    job_categories?: string[];
-}
+// Use a loose record so we can probe any field name the API returns
+type TheirStackJob = Record<string, any>;
 
 interface TheirStackResponse {
     data: TheirStackJob[];
     metadata?: { total: number };
+}
+
+function extractDescription(item: TheirStackJob): string {
+    const raw =
+        item.long_description ||
+        item.short_description ||
+        item.description ||
+        item.snippet ||
+        item.body ||
+        item.responsibilities ||
+        item.requirements ||
+        item.summary ||
+        '';
+    return String(raw).replace(/<\/?[^>]+(>|$)/g, '').trim();
 }
 
 export async function searchTheirStackAction(filters: JobSearchFilters): Promise<Job[]> {
@@ -57,16 +59,21 @@ export async function searchTheirStackAction(filters: JobSearchFilters): Promise
 
         const data: TheirStackResponse = await response.json();
 
+        // Log first result keys so we know the exact field names returned
+        if (data.data?.[0]) {
+            console.log('[TheirStack] First result keys:', Object.keys(data.data[0]));
+        }
+
         return (data.data || []).map(item => ({
             id: `theirstack-${item.id}`,
-            title: item.job_title || '',
-            company: item.company_object?.name || item.company_name || 'Unknown',
-            location: item.location || item.company_object?.country_code || '',
-            description: (item.long_description || item.short_description || '').replace(/<\/?[^>]+(>|$)/g, ''),
-            url: item.url || '',
-            datePosted: item.date_posted || new Date().toISOString(),
-            salary: item.salary_string || undefined,
-            category: item.job_categories?.[0] || 'Jobs',
+            title: item.job_title || item.title || '',
+            company: item.company_object?.name || item.company_name || item.company || 'Unknown',
+            location: item.location || item.city || item.country || item.company_object?.country_code || '',
+            description: extractDescription(item),
+            url: item.url || item.job_url || item.apply_url || '',
+            datePosted: item.date_posted || item.posted_at || item.created_at || new Date().toISOString(),
+            salary: item.salary_string || item.salary || undefined,
+            category: item.job_categories?.[0] || item.category || 'Jobs',
             source: ['TheirStack'],
         }));
     } catch (error) {

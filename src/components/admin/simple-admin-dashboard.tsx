@@ -14,8 +14,9 @@ import { ExperienceManager } from './sections/experience-manager';
 import { SkillsManager } from './sections/skills-manager';
 import { SettingsManager } from './sections/settings-manager';
 import { SecurityLogs } from './sections/security-logs';
+import { ProfileManager } from './sections/profile-manager';
 
-type AdminView = 'overview' | 'personal' | 'projects' | 'experience' | 'skills' | 'settings' | 'security';
+type AdminView = 'overview' | 'profile' | 'settings' | 'security';
 
 export function SimpleAdminDashboard() {
   const { projects, experience, skills, refresh, loading, error } = useSimplePortfolio();
@@ -24,11 +25,8 @@ export function SimpleAdminDashboard() {
 
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'personal', label: 'Personal Info', icon: User },
-    { id: 'projects', label: 'Projects', icon: Briefcase, count: projects.length },
-    { id: 'experience', label: 'Experience', icon: GraduationCap, count: experience.length },
-    { id: 'skills', label: 'Skills', icon: Code2, count: skills.reduce((acc, cat) => acc + cat.skills.length, 0) },
-    { id: 'settings', label: 'Customization', icon: Settings },
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'security', label: 'Security Logs', icon: Shield },
   ];
 
@@ -56,9 +54,9 @@ export function SimpleAdminDashboard() {
           >
             <item.icon className="mr-2 h-4 w-4" />
             {item.label}
-            {item.count !== undefined && (
+            {('count' in item) && (item as any).count !== undefined && (
               <span className="ml-auto text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                {item.count}
+                {(item as any).count}
               </span>
             )}
           </Button>
@@ -117,14 +115,8 @@ export function SimpleAdminDashboard() {
             </div>
           </div>
         );
-      case 'personal':
-        return <PersonalInfoSection />;
-      case 'projects':
-        return <ProjectsManager />;
-      case 'experience':
-        return <ExperienceManager />;
-      case 'skills':
-        return <SkillsManager />;
+      case 'profile':
+        return <ProfileManager />;
       case 'settings':
         return <SettingsManager />;
       case 'security':

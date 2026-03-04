@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Calendar, MapPin, Building2, Briefcase, Bookmark, BookmarkPlus, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ExternalLink, Calendar, MapPin, Building2, Briefcase, Bookmark, BookmarkPlus, Loader2, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { Job } from "@/app/actions/adzuna-actions";
 import type { JobMatchScore } from "@/app/actions/job-match-action";
@@ -95,9 +96,26 @@ export function JobCard({ job, matchScore, onSaveToHistory, onDirectSave, isSave
                         </div>
                     )}
                 </div>
-                {matchScore && (
-                    <JobFitDialog job={job} matchScore={matchScore} onSaveToHistory={onSaveToHistory} />
-                )}
+                <div className="flex items-center gap-2">
+                    {matchScore && (
+                        <JobFitDialog job={job} matchScore={matchScore} onSaveToHistory={onSaveToHistory} />
+                    )}
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" title="View Full Description">
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle>{job.title}</DialogTitle>
+                            </DialogHeader>
+                            <div className="mt-4 whitespace-pre-wrap text-sm text-foreground/90 leading-relaxed">
+                                {job.description}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </CardFooter>
         </Card>
     );

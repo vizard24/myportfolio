@@ -16,10 +16,6 @@ const outfit = Outfit({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Yaovi Portfolio',
   description: 'A personal portfolio showcasing projects, experience, and skills, with an AI-powered resume pitch generator.',
-  icons: {
-    icon: '/icon.png',
-    apple: '/apple-icon.png',
-  },
 };
 
 export default function RootLayout({

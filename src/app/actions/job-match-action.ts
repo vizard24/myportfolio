@@ -77,14 +77,20 @@ export async function calculateJobMatchAction(
     jobTitle: string
 ): Promise<{ success: boolean; data?: JobMatchScore; error?: string }> {
     try {
-        if (!resume || !jobDescription || !jobTitle) {
-            return { success: false, error: 'Missing required fields' };
+        if (!resume) {
+            return { success: false, error: 'Missing resume' };
         }
+
+        // Use title as fallback if description is empty (e.g. TheirStack)
+        const effectiveDescription = jobDescription?.trim()
+            ? jobDescription.trim()
+            : `Job title: ${jobTitle}. No further description available.`;
+        const effectiveTitle = jobTitle?.trim() || 'Untitled';
 
         const result = await jobMatchFlow({
             resume,
-            jobDescription,
-            jobTitle,
+            jobDescription: effectiveDescription,
+            jobTitle: effectiveTitle,
         });
 
         return {
